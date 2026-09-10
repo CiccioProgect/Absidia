@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absidia - Cronache di Elaya</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=IM+Fell+English:ital@0;1&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-ocean: #09131a;
+            --border-brass: #c29b38;
+            --text-foam: #e6edf2;
+            --text-faded: #8aa0b3;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-ocean);
+            color: var(--text-foam);
+            font-family: 'IM Fell English', serif;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 1rem;
+        }
+
+        /* Sfondo filigranato */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('Logo Completo.png');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 40% auto;
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Sezione Centrale */
+        .teaser-container {
+            width: 100%;
+            max-width: 620px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+            flex-grow: 1;
+            justify-content: center;
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            max-height: 42vh;
+            border: 2px solid var(--text-faded);
+            border-radius: 5px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.8);
+            background-color: #000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .video-wrapper video {
+            width: 100%;
+            height: auto;
+            max-height: 42vh;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* Contenitore intestazione finale */
+        .header-replacement {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            text-align: center;
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .header-logo-cappello {
+            height: 140px;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.9)) sepia(30%) hue-rotate(170deg) saturate(70%) blur(0.8px);
+            opacity: 0.85;
+        }
+
+        .header-logo-scritta {
+            height: 70px;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.95));
+        }
+
+        /* Pulsanti */
+        .actions-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .or-text {
+            font-family: 'Cinzel', serif;
+            color: var(--text-faded);
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        .btn {
+            display: inline-block;
+            font-family: 'Cinzel', serif;
+            background-color: rgba(17, 30, 38, 0.95);
+            color: var(--text-faded);
+            border: 2px solid var(--text-faded);
+            padding: 0.55rem 1.1rem;
+            text-decoration: none;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: var(--text-faded);
+            color: var(--bg-ocean);
+            box-shadow: 0 0 20px rgba(138, 160, 179, 0.4);
+            transform: translateY(-2px);
+        }
+
+        footer {
+            text-align: center;
+            padding: 0.5rem;
+            color: var(--text-faded);
+            font-size: 0.8rem;
+            font-family: 'Cinzel', serif;
+        }
+
+        /* --- Modale di Autenticazione --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(5, 11, 15, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(3px);
+            animation: fadeInModal 0.5s ease forwards;
+        }
+
+        @keyframes fadeInModal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: #1c2e38;
+            border: 2px solid var(--text-faded);
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            padding: 2.5rem;
+            text-align: center;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.9);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: var(--text-faded);
+            font-size: 1.5rem;
+            cursor: pointer;
+            font-family: sans-serif;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--text-foam);
+        }
+
+        .modal-content h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--text-faded);
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        .modal-content input[type="password"] {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1.5rem;
+            background-color: rgba(9, 19, 26, 0.8);
+            border: 2px solid var(--text-faded);
+            color: var(--text-foam);
+            font-family: 'IM Fell English', serif;
+            font-size: 1.2rem;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .modal-content input[type="password"]:focus {
+            outline: none;
+            border-color: var(--text-foam);
+            box-shadow: 0 0 15px rgba(138, 160, 179, 0.3);
+        }
+
+        .modal-error {
+            color: #d9534f;
+            font-size: 0.9rem;
+            margin-top: -1rem;
+            margin-bottom: 1rem;
+            display: none;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="teaser-container">
+        <div class="video-wrapper" id="videoBox">
+            <video id="teaserVideo" controls autoplay muted playsinline>
+                <source src="Absidia Teaser.mp4" type="video/mp4">
+                Il tuo browser non supporta la riproduzione dei video.
+            </video>
+        </div>
+
+        <div class="header-replacement" id="headerBox">
+            <img src="Cappello.png" alt="Absidia Cappello" class="header-logo-cappello">
+            <div>
+                <img src="Logo Scritta.png" alt="ABSIDIA" class="header-logo-scritta">
+                <p>La voce del Mare</p>
+            </div>
+        </div>
+        
+        <div class="actions-wrapper">
+            <button class="btn" id="replayBtn">Riguarda il Teaser</button>
+            <span class="or-text">oppure</span>
+            <button class="btn" id="enterBtn">Entra nel Portale</button>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Absidia - Cronache di Elaya. Tutti i diritti riservati.</p>
+    </footer>
+
+    <!-- Modale di Autenticazione -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-content">
+            <span class="modal-close" id="modalClose">&times;</span>
+            <h3>Parola d'Ordine</h3>
+            <input type="password" id="passwordInput" placeholder="Inserisci codice..." maxlength="30">
+            <p class="modal-error" id="errorMessage">Chiave errata.</p>
+            <button class="btn" id="submitPassword">Accedi alle Rotte</button>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('teaserVideo');
+        const videoBox = document.getElementById('videoBox');
+        const headerBox = document.getElementById('headerBox');
+        const replayBtn = document.getElementById('replayBtn');
+        const enterBtn = document.getElementById('enterBtn');
+        
+        const loginModal = document.getElementById('loginModal');
+        const modalClose = document.getElementById('modalClose');
+        const passwordInput = document.getElementById('passwordInput');
+        const submitPassword = document.getElementById('submitPassword');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // --- CONFIGURA QUI LE TUE PASSWORD ---
+        const ADMIN_PASSWORD_KEY = "paolone84";
+        const VIEWER_PASSWORD_KEY = "absidia"; 
+        // -------------------------------------
+
+        video.addEventListener('ended', () => {
+            videoBox.style.display = 'none';
+            headerBox.style.display = 'flex';
+        });
+
+        replayBtn.addEventListener('click', () => {
+            headerBox.style.display = 'none';
+            videoBox.style.display = 'flex';
+            video.currentTime = 0;
+            video.play();
+        });
+
+        enterBtn.addEventListener('click', () => {
+            loginModal.style.display = 'flex';
+            passwordInput.focus();
+        });
+
+        modalClose.addEventListener('click', () => {
+            loginModal.style.display = 'none';
+            passwordInput.value = "";
+            errorMessage.style.display = "none";
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === loginModal) {
+                loginModal.style.display = 'none';
+                passwordInput.value = "";
+                errorMessage.style.display = "none";
+            }
+        });
+
+        function attemptLogin() {
+            const enteredPass = passwordInput.value.trim();
+
+            if (enteredPass === ADMIN_PASSWORD_KEY) {
+                sessionStorage.setItem("absidia_session", "admin_unlocked");
+                window.location.href = "portale.html";
+            } else if (enteredPass === VIEWER_PASSWORD_KEY) {
+                sessionStorage.setItem("absidia_session", "viewer_unlocked");
+                window.location.href = "portale.html";
+            } else {
+                errorMessage.style.display = "block";
+                passwordInput.value = "";
+            }
+        }
+
+        submitPassword.addEventListener('click', attemptLogin);
+
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                attemptLogin();
+            }
+        });
+    </script>
+</body>
+</html>
