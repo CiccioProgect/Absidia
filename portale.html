@@ -99,17 +99,58 @@
             justify-content: center;
             align-items: center;
             padding: 2rem 0;
+            gap: 2.5rem;
         }
 
         .portal-content-box {
             background-color: rgba(17, 30, 38, 0.85);
             border: 2px solid var(--text-faded);
             border-radius: 6px;
-            padding: 4rem 2rem;
+            padding: 2rem;
             box-shadow: 0 8px 25px rgba(0,0,0,0.7);
-            text-align: center;
             width: 100%;
             max-width: 700px;
+            height: 150px;
+            display: flex;
+            align-items: center; 
+            justify-content: center; 
+            text-align: center;
+        }
+
+        /* Sezione Pulsanti di Navigazione */
+        .portal-nav-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .portal-btn {
+            font-family: 'Cinzel', serif;
+            background-color: rgba(17, 30, 38, 0.9);
+            color: var(--text-foam);
+            border: 2px solid var(--text-faded);
+            padding: 0.9rem 1.8rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 4px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .portal-btn:hover {
+            background-color: var(--text-faded);
+            color: var(--bg-ocean);
+            border-color: var(--text-foam);
+            box-shadow: 0 0 20px rgba(138, 160, 179, 0.5);
+            transform: translateY(-3px);
         }
 
         /* Testo dinamico con effetto dissolvenza */
@@ -120,7 +161,10 @@
             color: var(--text-foam);
             letter-spacing: 3px;
             text-shadow: 0 0 15px rgba(138, 160, 179, 0.4);
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transform: translateY(4px);
             opacity: 1;
             transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
         }
@@ -219,8 +263,11 @@
         @media (max-width: 768px) {
             .header-logo-cappello { height: 100px; }
             .header-logo-scritta { height: 50px; }
+            .portal-content-box { height: 130px; }
             .dynamic-text { font-size: 1.5rem; }
             .cursor { height: 1.4rem; }
+            .portal-nav-buttons { gap: 1rem; }
+            .portal-btn { width: 100%; min-width: unset; }
             .admin-control-panel { bottom: 10px; right: 10px; padding: 0.6rem; }
         }
     </style>
@@ -232,13 +279,19 @@
             <img src="Cappello.png" alt="Absidia Cappello" class="header-logo-cappello">
             <div>
                 <img src="Logo Scritta.png" alt="ABSIDIA" class="header-logo-scritta">
-                </div>
+            </div>
         </div>
     </header>
 
     <main>
         <div class="portal-content-box">
             <div class="dynamic-text" id="animatedText"><span id="textContent"></span><span class="cursor" id="cursorSpan"></span></div>
+        </div>
+
+        <div class="portal-nav-buttons">
+            <a href="manutenzione.html" class="portal-btn">CODEX<br><span style="font-size: 0.75rem; font-weight: normal; letter-spacing: 1px;">I MANUALI</span></a>
+            <a href="terre_unite.html" class="portal-btn">ELAYA<br><span style="font-size: 0.75rem; font-weight: normal; letter-spacing: 1px;">LE TERRE UNITE</span></a>
+            <a href="absidia.html" class="portal-btn">ABSIDIA<br><span style="font-size: 0.75rem; font-weight: normal; letter-spacing: 1px;">IL NUOVO MONDO</span></a>
         </div>
     </main>
 
@@ -253,15 +306,12 @@
 
     <script>
         // --- CONTROLLO DI SICUREZZA ---
-        // Verifica se l'utente è passato dalla index inserendo la password corretta
         const sessionRole = sessionStorage.getItem("absidia_session");
 
         if (!sessionRole || (sessionRole !== "admin_unlocked" && sessionRole !== "viewer_unlocked")) {
-            // Se non c'è una sessione valida, rispedisci l'utente alla home
             window.location.href = "index.html";
         }
 
-        // Se l'utente è l'Admin, mostra il pannello di controllo privato
         if (sessionRole === "admin_unlocked") {
             const adminPanel = document.getElementById('adminPanel');
             if (adminPanel) {
