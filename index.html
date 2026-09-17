@@ -165,7 +165,7 @@
             <button class="control-btn" id="pauseBtn">PAUSA</button>
         </div>
 
-        <!-- Destra: Riavvia ed Entra nel Portale -->
+        <!-- Destra: Riavvia ed Entra nel Portale (Riavvia centrato rispetto a Entra) -->
         <div class="button-group group-right">
             <button class="control-btn" id="replayBtn">RIAVVIA</button>
             <button class="control-btn" id="enterBtn">ENTRA NEL PORTALE</button>
@@ -187,32 +187,30 @@
         const body = document.body;
 
         let mouseTimer = null;
-        let hasInteracted = false;
 
         // Tentativo di avvio automatico immediato del video
         video.play().catch(error => {
-            console.log("Autoplay iniziale limitato dal browser, in attesa di movimento:", error);
+            console.log("Autoplay iniziale limitato dal browser, in attesa di interazione:", error);
         });
 
-        // Al primo movimento del mouse sblocca schermo intero, audio e avvio (se in pausa)
-        window.addEventListener('mousemove', () => {
-            if (!hasInteracted) {
-                hasInteracted = true;
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen().catch(err => {
-                        console.log("Impossibile attivare la modalità schermo intero automatica:", err);
-                    });
-                }
-                if (video.paused) {
-                    video.play();
-                }
-                if (video.muted) {
-                    video.muted = false;
-                    volumeBtn.textContent = "🔊";
-                }
+        // Attiva automaticamente la modalità schermo intero e sblocca l'audio al primo click sulla pagina
+        window.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log("Impossibile attivare la modalità schermo intero automatica:", err);
+                });
             }
+            if (video.paused) {
+                video.play();
+            }
+            if (video.muted) {
+                video.muted = false;
+                volumeBtn.textContent = "🔊";
+            }
+        }, { once: true });
 
-            // Gestione della comparsa dei comandi al movimento del mouse
+        // Gestione della comparsa dei comandi al movimento del mouse
+        window.addEventListener('mousemove', () => {
             body.classList.add('active-mouse');
             clearTimeout(mouseTimer);
             
