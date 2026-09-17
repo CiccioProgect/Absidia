@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absidia - Cronache di Elaya</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=IM+Fell+English:ital@0;1&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-ocean: #09131a;
+            --text-foam: #e6edf2;
+            --text-faded: #8aa0b3;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Blocca rigorosamente la pagina dentro i confini della schermata, senza scroll */
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-ocean);
+            color: var(--text-foam);
+            font-family: 'IM Fell English', serif;
+        }
+
+        /* Contenitore video a schermo intero */
+        .fullscreen-video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .fullscreen-video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Overlay per i controlli a comparsa */
+        .overlay-controls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5rem;
+            background: rgba(9, 19, 26, 0.3);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        /* Mostra i controlli quando si muove il mouse */
+        body.active-mouse .overlay-controls {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Gruppi di pulsanti laterali */
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .group-left {
+            align-items: flex-start;
+        }
+
+        .group-right {
+            align-items: center; /* Centrato verticalmente rispetto alla colonna di destra */
+        }
+
+        /* Stile comune dei pulsanti di controllo */
+        .control-btn {
+            font-family: 'Cinzel', serif;
+            background-color: rgba(17, 30, 38, 0.9);
+            color: var(--text-foam);
+            border: 2px solid var(--text-faded);
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            min-width: 220px;
+        }
+
+        .control-btn:hover {
+            background-color: var(--text-faded);
+            color: var(--bg-ocean);
+            border-color: var(--text-foam);
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(138, 160, 179, 0.6);
+        }
+
+        /* Pulsante Volume in basso a destra */
+        .volume-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 20;
+        }
+
+        .volume-btn {
+            background-color: rgba(17, 30, 38, 0.8);
+            color: var(--text-foam);
+            border: 2px solid var(--text-faded);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            transition: all 0.3s ease;
+        }
+
+        .volume-btn:hover {
+            background-color: var(--text-faded);
+            color: var(--bg-ocean);
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Video a schermo intero con autoplay -->
+    <div class="fullscreen-video-container">
+        <video id="teaserVideo" autoplay playsinline>
+            <source src="Absidia Teaser.mp4" type="video/mp4">
+            Il tuo browser non supporta la riproduzione dei video.
+        </video>
+    </div>
+
+    <!-- Controlli a comparsa -->
+    <div class="overlay-controls" id="overlayControls">
+        <!-- Sinistra: Play e Pausa -->
+        <div class="button-group group-left">
+            <button class="control-btn" id="playBtn">PLAY</button>
+            <button class="control-btn" id="pauseBtn">PAUSA</button>
+        </div>
+
+        <!-- Destra: Riavvia ed Entra nel Portale (Riavvia centrato rispetto a Entra) -->
+        <div class="button-group group-right">
+            <button class="control-btn" id="replayBtn">RIAVVIA</button>
+            <button class="control-btn" id="enterBtn">ENTRA NEL PORTALE</button>
+        </div>
+    </div>
+
+    <!-- Icona Volume in basso a destra -->
+    <div class="volume-container">
+        <button class="volume-btn" id="volumeBtn" title="Attiva/Disattiva Audio">🔊</button>
+    </div>
+
+    <script>
+        const video = document.getElementById('teaserVideo');
+        const playBtn = document.getElementById('playBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const replayBtn = document.getElementById('replayBtn');
+        const enterBtn = document.getElementById('enterBtn');
+        const volumeBtn = document.getElementById('volumeBtn');
+        const body = document.body;
+
+        let mouseTimer = null;
+
+        // Tentativo di avvio automatico immediato del video
+        video.play().catch(error => {
+            console.log("Autoplay iniziale limitato dal browser, in attesa di interazione:", error);
+        });
+
+        // Attiva automaticamente la modalità schermo intero e sblocca l'audio al primo click sulla pagina
+        window.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log("Impossibile attivare la modalità schermo intero automatica:", err);
+                });
+            }
+            if (video.paused) {
+                video.play();
+            }
+            if (video.muted) {
+                video.muted = false;
+                volumeBtn.textContent = "🔊";
+            }
+        }, { once: true });
+
+        // Gestione della comparsa dei comandi al movimento del mouse
+        window.addEventListener('mousemove', () => {
+            body.classList.add('active-mouse');
+            clearTimeout(mouseTimer);
+            
+            if (!video.paused) {
+                mouseTimer = setTimeout(() => {
+                    body.classList.remove('active-mouse');
+                }, 1500);
+            }
+        });
+
+        // Pulsante Play
+        playBtn.addEventListener('click', () => {
+            video.play();
+        });
+
+        // Pulsante Pausa
+        pauseBtn.addEventListener('click', () => {
+            video.pause();
+        });
+
+        // Pulsante Riavvia
+        replayBtn.addEventListener('click', () => {
+            video.currentTime = 0;
+            video.play();
+        });
+
+        // Gestione Volume On/Off
+        volumeBtn.addEventListener('click', () => {
+            video.muted = !video.muted;
+            volumeBtn.textContent = video.muted ? "🔇" : "🔊";
+        });
+
+        // Mantieni i comandi visibili quando il video finisce
+        video.addEventListener('ended', () => {
+            body.classList.add('active-mouse');
+        });
+
+        // Accesso diretto al portale
+        enterBtn.addEventListener('click', () => {
+            sessionStorage.setItem("absidia_session", "unlocked");
+            window.location.href = "portale.html";
+        });
+    </script>
+</body>
+</html>
