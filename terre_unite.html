@@ -206,6 +206,55 @@
             color: var(--text-foam);
         }
 
+        /* Player Audio in alto a destra */
+        .audio-container {
+            position: absolute;
+            right: 2rem;
+            top: 1.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            padding: 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            border-radius: 30px;
+            z-index: 10;
+        }
+
+        audio {
+            height: 35px;
+            width: 220px;
+            border-radius: 30px;
+            border: none;
+            outline: none;
+            background-color: rgba(220, 225, 230, 0.9);
+        }
+
+        /* Avviso visivo discreto se l'autoplay viene bloccato */
+        #audio-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(17, 30, 38, 0.9);
+            border: 1px solid var(--border-brass);
+            color: var(--text-foam);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+        }
+
+        #audio-prompt.show {
+            opacity: 0.85;
+        }
+
         .header-stack-container {
             display: flex;
             flex-direction: column;
@@ -429,6 +478,15 @@
                 margin-bottom: 0.8rem;
                 text-align: center;
             }
+            .audio-container {
+                position: static;
+                margin-top: 0.8rem;
+                display: flex;
+                justify-content: center;
+            }
+            audio {
+                width: 250px;
+            }
             .header-logo-cappello { height: 80px; }
             .header-logo-scritta { height: 40px; }
             
@@ -499,10 +557,22 @@
         <div class="map-hint">[ CLICCA SULLA MAPPA PER ENTRARE ]</div>
     </div>
 
+    <!-- AVVISO AUDIO BLOCCATO -->
+    <div id="audio-prompt">[ Clicca sul player per attivare la musica ]</div>
+
     <!-- CONTENUTO PRINCIPALE DELLA PAGINA -->
     <div id="main-content-wrapper">
         <header>
             <a href="portale.html" class="back-link">&larr; TORNA AL PORTALE</a>
+            
+            <!-- Player Audio in alto a destra -->
+            <div class="audio-container">
+                <audio id="bg-audio" controls loop preload="auto">
+                    <source src="Protettori.mp3" type="audio/mpeg">
+                    Il tuo browser non supporta l'elemento audio.
+                </audio>
+            </div>
+
             <div class="header-stack-container">
                 <img src="Cappello.png" alt="Absidia Cappello" class="header-logo-cappello">
                 <div>
@@ -728,6 +798,13 @@
     </div>
 
     <script>
+        // --- GESTIONE AUDIO ---
+        const audio = document.getElementById('bg-audio');
+        const audioPrompt = document.getElementById('audio-prompt');
+
+        // Imposta il volume iniziale a metà (0.5)
+        audio.volume = 0.5;
+
         // --- FUNZIONE PER SBLOCCARE LA PAGINA AL CLIC SULLA MAPPA ---
         function unlockPage() {
             const overlay = document.getElementById('map-overlay');
@@ -736,6 +813,20 @@
             overlay.classList.add('hidden');
             wrapper.classList.add('unlocked');
             
+            // Tenta l'avvio o lo sblocco dell'audio all'interazione con la mappa iniziale
+            audio.play().then(() => {
+                audioPrompt.classList.remove('show');
+            }).catch(() => {
+                audioPrompt.classList.add('show');
+                const unlockAudio = () => {
+                    audio.play().then(() => {
+                        audioPrompt.classList.remove('show');
+                        window.removeEventListener('click', unlockAudio);
+                    }).catch(() => {});
+                };
+                window.addEventListener('click', unlockAudio);
+            });
+
             setTimeout(runCycle, 500);
         }
 
@@ -778,7 +869,7 @@
         // --- GESTIONE SWIPE PER DISPOSITIVI MOBILI ---
         let touchStartX = 0;
         let touchEndX = 0;
-        const minSwipeDistance = 50; // Soglia minima in pixel per considerare valido lo swipe
+        const minSwipeDistance = 50;
 
         document.addEventListener('touchstart', (event) => {
             touchStartX = event.changedTouches[0].screenX;
@@ -790,17 +881,14 @@
         }, { passive: true });
 
         function handleSwipe() {
-            // Se la mappa iniziale è ancora aperta, non attivare lo swipe
             if (!document.getElementById('map-overlay').classList.contains('hidden')) return;
 
             const distance = touchEndX - touchStartX;
             
             if (Math.abs(distance) >= minSwipeDistance) {
                 if (distance > 0) {
-                    // Swipe verso destra -> Sezione Precedente
                     changeSection(-1);
                 } else {
-                    // Swipe verso sinistra -> Sezione Successiva
                     changeSection(1);
                 }
             }
