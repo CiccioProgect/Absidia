@@ -33,6 +33,40 @@
             justify-content: space-between;
         }
 
+        /* Contenitore Sfondi Mappa in dissolvenza */
+        .map-bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            overflow: hidden;
+            background-color: var(--bg-ocean);
+        }
+
+        .map-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            filter: brightness(0.35) sepia(20%) hue-rotate(170deg);
+            animation: zoomMap 6s infinite alternate ease-in-out;
+        }
+
+        .map-bg.active {
+            opacity: 1;
+        }
+
+        @keyframes zoomMap {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.08); }
+        }
+
         /* Sfondo filigranato con Logo Completo.png */
         body::before {
             content: "";
@@ -295,6 +329,12 @@
 </head>
 <body>
 
+    <!-- Sfondi Mappa in dissolvenza -->
+    <div class="map-bg-container">
+        <img src="Mappa.jpg" alt="Mappa" class="map-bg active" id="map1">
+        <img src="mappaabsidia.jpg" alt="Mappa Absidia" class="map-bg" id="map2">
+    </div>
+
     <header>
         <div class="header-stack-container">
             <img src="Cappello.png" alt="Absidia Cappello" class="header-logo-cappello">
@@ -339,6 +379,15 @@
         document.getElementById('editContentBtn').addEventListener('click', () => {
             alert("Modalità di modifica attiva.");
         });
+
+        // --- Logica Alternanza Mappe di Sfondo ---
+        const map1 = document.getElementById('map1');
+        const map2 = document.getElementById('map2');
+
+        setInterval(() => {
+            map1.classList.toggle('active');
+            map2.classList.toggle('active');
+        }, 4000);
 
         // --- Logica Autoplay e Sblocco Audio al primo input ---
         document.addEventListener('DOMContentLoaded', () => {
