@@ -385,6 +385,7 @@
             margin-bottom: 1.2rem;
             text-align: justify;
             text-shadow: 0 1px 1px rgba(255,255,255,0.4);
+            hyphens: auto;
         }
 
         .content-box p:last-child {
@@ -436,7 +437,7 @@
                 max-width: 100%; 
                 height: auto; 
                 min-height: 80px;
-                padding: 1rem;
+                padding: 0.8rem 0.5rem;
             }
             .header-animated-text { 
                 font-size: 1.1rem; 
@@ -701,7 +702,7 @@
 
             <!-- BOX 10: CONTEE SENZA DOMINIO -->
             <div id="section-9" class="content-box">
-                <p>Nelle Terre Unite vi sono luoghi liberi non governati da signori, non retti da lord, non assoggettati a nessuna legge. Alcuni di questi sono particolari accozzaglie di unioni fra uomini e altro, altri invece sembrano più antichi degli inferi, in ogni caso non sono come le grandi 7 Città Stato. Più piccoli per numero e con organizzazioni diverse, sono i pochi luoghi conosciuti oltre quest'ultime.</p>
+                <p>Nelle Terre Unite vi sono luoghi liberi non governati da signori, non retti by lord, non assoggettati a nessuna legge. Alcuni di questi sono particolari accozzaglie di unioni fra uomini e altro, altri invece sembrano più antichi degli inferi, in ogni caso non sono come le grandi 7 Città Stato. Più piccoli per numero e con organizzazioni diverse, sono i pochi luoghi conosciuti oltre quest'ultime.</p>
                 
                 <p><strong>BOSCO DELLE FURIE</strong></p>
                 <p>..una donna, bella come la luna piena, promise la sua mano ed un albero d'argento al valoroso che fosse riuscito a liberarla dalla stretta maledizione che la teneva legata per i capelli all'arbusto. Si precipitarono, all'allora Bosco di Mezzo, tre capitani di ventura con le loro fratellanze armate. Biruk il Triste, a capo della Fratellanza dell'Orso Bruno, Rastak il Troll, a capo della Fratellanza del Gufo e Paride l'Esiliato, a capo della Confraternita del Leone. Il primo rimase estasiato dall'albero completamente d'argento e tentò di salirci sopra per vedere quanto fosse alto ma arrivato in cima cadde, morendo sul colpo. Rastak il Troll pensò che l'unico modo di avere l'albero fosse staccare letteralmente il corpo della donna dallo stesso e quando impennò la spada per colpirla, un ramo, staccatosi, lo schiacciò di netto. Quando gli armigeri delle 2 fratellanze, ormai senza un capo, stavano iniziando a spazientirsi, ululando grida di virilità su chi dovesse diventarlo, silenzioso e sicuro si fece spazio tra la folla Paride, che si avvicinò alla donna e la baciò intensamente. Lentamente i capelli della fanciulla incominciarono a sciogliersi dall'albero e quando ne fu completamente libera, esordì: "Mio eroe, da oggi la mia vita e quest'albero sono tue per i secoli a seguire". L'esiliato sfoggiò un ghigno sfottente, sfoderò la spada e le staccò con un singolo con colpo la testa di netto. Il sangue che si riversò sulla sua lama la tramutò interamente in argento finissimo e tagliente. Gli Orso Bruno e i Gufo, visto ciò, inneggiarono con grida di vittoria all'esiliato che promise ad ogni suo uomo un pezzo dell'albero. Non c'erano altro da aggiungere, da quel momento tutti si inginocchiarono e giurarono insieme: "Per l'argento e la Vittoria noi siamo tuoi, e combatteremo per te e per i tuoi..."</p>
@@ -773,6 +774,37 @@
                 changeSection(1);
             }
         });
+
+        // --- GESTIONE SWIPE PER DISPOSITIVI MOBILI ---
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const minSwipeDistance = 50; // Soglia minima in pixel per considerare valido lo swipe
+
+        document.addEventListener('touchstart', (event) => {
+            touchStartX = event.changedTouches[0].screenX;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (event) => {
+            touchEndX = event.changedTouches[0].screenX;
+            handleSwipe();
+        }, { passive: true });
+
+        function handleSwipe() {
+            // Se la mappa iniziale è ancora aperta, non attivare lo swipe
+            if (!document.getElementById('map-overlay').classList.contains('hidden')) return;
+
+            const distance = touchEndX - touchStartX;
+            
+            if (Math.abs(distance) >= minSwipeDistance) {
+                if (distance > 0) {
+                    // Swipe verso destra -> Sezione Precedente
+                    changeSection(-1);
+                } else {
+                    // Swipe verso sinistra -> Sezione Successiva
+                    changeSection(1);
+                }
+            }
+        }
 
         // --- LOOP TITOLO PRINCIPALE ---
         const titleElement = document.getElementById('headerTitle');
