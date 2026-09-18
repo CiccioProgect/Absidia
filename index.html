@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absidia - Cronache di Elaya</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=IM+Fell+English:ital@0;1&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-ocean: #09131a;
+            --text-foam: #e6edf2;
+            --text-faded: #8aa0b3;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Blocca rigorosamente la pagina dentro i confini della schermata, senza scroll, usando i viewport dinamici per mobile */
+        html, body {
+            width: 100vw;
+            height: 100dvh;
+            overflow: hidden;
+            background-color: var(--bg-ocean);
+            color: var(--text-foam);
+            font-family: 'IM Fell English', serif;
+        }
+
+        /* Contenitore video a schermo intero */
+        .fullscreen-video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100dvh;
+            background-color: #000;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            transition: opacity 1s ease;
+        }
+
+        .fullscreen-video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Contenitore Finale con Logo e Mappe di Sfondo Alternate */
+        .center-logo-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100dvh;
+            background-color: var(--bg-ocean);
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.2s ease;
+            overflow: hidden;
+        }
+
+        .center-logo-container.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Sfondi mappa alternati con dissolvenza e zoom sincronizzato */
+        .map-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            z-index: 1;
+            filter: brightness(0.35) sepia(20%) hue-rotate(170deg);
+            animation: zoomMap 6s infinite alternate ease-in-out;
+        }
+
+        .map-bg.active {
+            opacity: 1;
+        }
+
+        @keyframes zoomMap {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.08); }
+        }
+
+        /* Animazione di pulsazione/zoom per il logo centrale */
+        @keyframes pulseLogo {
+            0% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 30px rgba(138, 160, 179, 0.6)); }
+            100% { transform: scale(1); opacity: 0.9; }
+        }
+
+        .pulsing-logo-box {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+            animation: pulseLogo 6s infinite ease-in-out;
+        }
+
+        .center-hat {
+            height: 110px;
+            filter: drop-shadow(0 4px 15px rgba(0,0,0,0.9));
+        }
+
+        .center-text-logo {
+            height: 70px;
+            filter: drop-shadow(0 4px 15px rgba(0,0,0,0.9));
+        }
+
+        /* Overlay per i controlli a comparsa */
+        .overlay-controls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100dvh;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4rem;
+            background: rgba(9, 19, 26, 0.3);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        /* Mostra i controlli quando si muove il mouse o si tocca lo schermo su mobile */
+        body.active-mouse .overlay-controls {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Gruppi laterali completi di loghi e pulsanti */
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        /* Stile dei loghi decorativi laterali */
+        .side-logo-top {
+            height: 50px;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.9));
+            opacity: 0.85;
+        }
+
+        .side-logo-bottom {
+            height: 35px;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.9));
+            opacity: 0.85;
+        }
+
+        /* Stile comune dei pulsanti di controllo */
+        .control-btn {
+            font-family: 'Cinzel', serif;
+            background-color: rgba(17, 30, 38, 0.9);
+            color: var(--text-foam);
+            border: 2px solid var(--text-faded);
+            padding: 0.7rem 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            min-width: 190px;
+        }
+
+        .control-btn:hover {
+            background-color: var(--text-faded);
+            color: var(--bg-ocean);
+            border-color: var(--text-foam);
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(138, 160, 179, 0.6);
+        }
+
+        /* Pulsante Volume in basso a destra */
+        .volume-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 20;
+        }
+
+        .volume-btn {
+            background-color: rgba(17, 30, 38, 0.8);
+            color: var(--text-foam);
+            border: 2px solid var(--text-faded);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            transition: all 0.3s ease;
+        }
+
+        .volume-btn:hover {
+            background-color: var(--text-faded);
+            color: var(--bg-ocean);
+            transform: scale(1.1);
+        }
+
+        /* --- ADATTAMENTO RESPONSIVE PER CELLULARI (SCHERMI PICCOLI) --- */
+        @media (max-width: 900px) {
+            .overlay-controls {
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding: 1rem;
+                gap: 1.5rem;
+                overflow-y: auto;
+            }
+
+            .button-group {
+                gap: 0.5rem;
+                width: 100%;
+                max-width: 260px;
+            }
+
+            .control-btn {
+                width: 100%;
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
+                min-width: unset;
+            }
+
+            .side-logo-top {
+                height: 40px;
+            }
+
+            .side-logo-bottom {
+                height: 25px;
+            }
+
+            .center-hat {
+                height: 80px;
+            }
+
+            .center-text-logo {
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Video a schermo intero con autoplay -->
+    <div class="fullscreen-video-container" id="videoContainer">
+        <video id="teaserVideo" autoplay playsinline>
+            <source src="Absidia Teaser.mp4" type="video/mp4">
+            Il tuo browser non supporta la riproduzione dei video.
+        </video>
+    </div>
+
+    <!-- Schermata Finale: Logo Centrale + Sfondi Mappa Alternati -->
+    <div class="center-logo-container" id="centerLogoContainer">
+        <!-- Sfondi mappa che si alternano -->
+        <img src="Mappa.jpg" alt="Mappa" class="map-bg active" id="map1">
+        <img src="mappaabsidia.jpg" alt="Mappa Absidia" class="map-bg" id="map2">
+
+        <!-- Logo centrale con effetto pulsazione -->
+        <div class="pulsing-logo-box">
+            <img src="Cappello.png" alt="Cappello" class="center-hat">
+            <img src="Logo Scritta.png" alt="Logo Scritta" class="center-text-logo">
+        </div>
+    </div>
+
+    <!-- Controlli a comparsa -->
+    <div class="overlay-controls" id="overlayControls">
+        <!-- Sinistra: Logo sopra, Play, Pausa, Logo sotto -->
+        <div class="button-group group-left">
+            <img src="Cappello.png" alt="Logo" class="side-logo-top">
+            <button class="control-btn" id="playBtn">PLAY</button>
+            <button class="control-btn" id="pauseBtn">PAUSA</button>
+            <img src="Logo Scritta.png" alt="Logo Scritta" class="side-logo-bottom">
+        </div>
+
+        <!-- Destra: Logo sopra, Riavvia, Entra nel Portale, Logo sotto -->
+        <div class="button-group group-right">
+            <img src="Cappello.png" alt="Logo" class="side-logo-top">
+            <button class="control-btn" id="replayBtn">RIAVVIA</button>
+            <button class="control-btn" id="enterBtn">ENTRA NEL PORTALE</button>
+            <img src="Logo Scritta.png" alt="Logo Scritta" class="side-logo-bottom">
+        </div>
+    </div>
+
+    <!-- Icona Volume in basso a destra -->
+    <div class="volume-container">
+        <button class="volume-btn" id="volumeBtn" title="Attiva/Disattiva Audio">🔊</button>
+    </div>
+
+    <script>
+        const video = document.getElementById('teaserVideo');
+        const videoContainer = document.getElementById('videoContainer');
+        const centerLogoContainer = document.getElementById('centerLogoContainer');
+        const playBtn = document.getElementById('playBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const replayBtn = document.getElementById('replayBtn');
+        const enterBtn = document.getElementById('enterBtn');
+        const volumeBtn = document.getElementById('volumeBtn');
+        const map1 = document.getElementById('map1');
+        const map2 = document.getElementById('map2');
+        const body = document.body;
+
+        let mouseTimer = null;
+        let mapInterval = null;
+
+        // Tentativo di avvio automatico immediato del video
+        video.play().catch(error => {
+            console.log("Autoplay iniziale limitato dal browser, in attesa di interazione:", error);
+        });
+
+        // Gestione interazione iniziale (Click o Touch su mobile) per sbloccare audio e schermo intero
+        window.addEventListener('click', () => {
+            if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log("Impossibile attivare la modalità schermo intero automatica:", err);
+                });
+            }
+            if (video.paused && !video.ended) {
+                video.play();
+            }
+            if (video.muted) {
+                video.muted = false;
+                volumeBtn.textContent = "🔊";
+            }
+        }, { once: true });
+
+        // Gestione della comparsa dei comandi al movimento del mouse o al tocco dello schermo
+        function triggerControls() {
+            body.classList.add('active-mouse');
+            clearTimeout(mouseTimer);
+            
+            if (!video.paused && !video.ended) {
+                mouseTimer = setTimeout(() => {
+                    body.classList.remove('active-mouse');
+                }, 2000);
+            }
+        }
+
+        window.addEventListener('mousemove', triggerControls);
+        window.addEventListener('touchstart', triggerControls);
+
+        // Funzione per ripulire lo stato finale e fare ripartire il video
+        function resetAndPlay() {
+            centerLogoContainer.classList.remove('visible');
+            videoContainer.style.opacity = '1';
+            clearInterval(mapInterval); // Ferma l'alternanza delle mappe
+            video.currentTime = 0;
+            video.play();
+        }
+
+        // Pulsante Play
+        playBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (video.ended) {
+                resetAndPlay();
+            } else {
+                video.play();
+            }
+        });
+
+        // Pulsante Pausa
+        pauseBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!video.ended) {
+                video.pause();
+            }
+        });
+
+        // Pulsante Riavvia
+        replayBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            resetAndPlay();
+        });
+
+        // Gestione Volume On/Off
+        volumeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            video.muted = !video.muted;
+            volumeBtn.textContent = video.muted ? "🔇" : "🔊";
+        });
+
+        // Quando il video finisce: mostra il logo e avvia l'alternanza delle mappe in sottofondo
+        video.addEventListener('ended', () => {
+            videoContainer.style.opacity = '0';
+            centerLogoContainer.classList.add('visible');
+            body.classList.add('active-mouse'); // Mantiene i pulsanti accessibili
+
+            // Avvia l'alternanza tra le due mappe ogni 4 secondi
+            clearInterval(mapInterval);
+            mapInterval = setInterval(() => {
+                map1.classList.toggle('active');
+                map2.classList.toggle('active');
+            }, 4000);
+        });
+
+        // Accesso diretto al portale
+        enterBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sessionStorage.setItem("absidia_session", "unlocked");
+            window.location.href = "portale.html";
+        });
+    </script>
+</body>
+</html>
