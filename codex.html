@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codex - Absidia</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=IM+Fell+English:ital@0;1&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-ocean: #09131a;
+            --border-brass: #c29b38;
+            --text-foam: #e6edf2;
+            --text-faded: #8aa0b3; 
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-ocean);
+            color: var(--text-foam);
+            font-family: 'IM Fell English', serif;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Contenitore Sfondi Mappa in dissolvenza */
+        .map-bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            overflow: hidden;
+            background-color: var(--bg-ocean);
+        }
+
+        .map-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            filter: brightness(0.35) sepia(20%) hue-rotate(170deg);
+            animation: zoomMap 6s infinite alternate ease-in-out;
+        }
+
+        .map-bg.active {
+            opacity: 1;
+        }
+
+        @keyframes zoomMap {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.08); }
+        }
+
+        /* Sfondo filigranato con Logo Completo.png */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('Logo Completo.png');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 50% auto;
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Intestazione Globale fissa */
+        header {
+            text-align: center;
+            padding: 2rem 1rem 1.5rem 1rem;
+            background: linear-gradient(to bottom, rgba(5, 11, 15, 0.95), rgba(9, 19, 26, 0.8));
+            border-bottom: 1px solid var(--text-faded);
+            position: relative;
+            z-index: 1;
+        }
+
+        .back-link {
+            font-family: 'Cinzel', serif;
+            color: var(--text-faded);
+            text-decoration: none;
+            font-size: 0.855rem;
+            letter-spacing: 2px;
+            transition: color 0.3s ease;
+            position: absolute;
+            left: 2rem;
+            top: 2.2rem;
+        }
+
+        .back-link:hover {
+            color: var(--text-foam);
+        }
+
+        /* Player Audio in alto a destra */
+        .audio-container {
+            position: absolute;
+            right: 2rem;
+            top: 1.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            padding: 0;
+            z-index: 10;
+        }
+
+        audio {
+            height: 36px;
+            width: 220px;
+            border-radius: 30px;
+            border: none;
+            outline: none;
+            background-color: rgba(220, 225, 230, 0.9);
+        }
+
+        .header-stack-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+        }
+
+        .header-logo-cappello {
+            height: 130px;
+            width: auto;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.9)) sepia(30%) hue-rotate(170deg) saturate(70%) blur(0.8px);
+            opacity: 0.85;
+        }
+
+        .header-logo-scritta {
+            height: 65px;
+            width: auto;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.95));
+        }
+
+        /* Contenitore Principale */
+        main {
+            width: 90%;
+            max-width: 1100px;
+            margin: auto;
+            flex-grow: 1;
+            padding: 3rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Riquadro del Titolo Dinamico centrale */
+        .section-title-box {
+            background-color: rgba(17, 30, 38, 0.85);
+            border: 2px solid var(--text-faded);
+            border-radius: 8px;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.7);
+            width: 100%;
+            max-width: 950px;
+            height: 120px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Effetto dissolvenza e zoom combinati per le frasi alternate */
+        .header-animated-text {
+            font-family: 'Cinzel', serif;
+            font-weight: 800;
+            color: var(--text-foam);
+            font-size: 2rem;
+            letter-spacing: 4px;
+            text-shadow: 0 0 12px rgba(138, 160, 179, 0.4);
+            white-space: nowrap;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+            position: absolute;
+        }
+
+        .header-animated-text.visible {
+            opacity: 1;
+            transform: scale(1);
+            animation: pulseZoomAlt 3s infinite ease-in-out;
+        }
+
+        @keyframes pulseZoomAlt {
+            0% { transform: scale(1); text-shadow: 0 0 12px rgba(138, 160, 179, 0.4); }
+            50% { transform: scale(1.05); text-shadow: 0 0 22px rgba(194, 155, 56, 0.6); }
+            100% { transform: scale(1); text-shadow: 0 0 12px rgba(138, 160, 179, 0.4); }
+        }
+
+        /* Nuovi Box per Download Manuali */
+        .manuals-container {
+            display: flex;
+            gap: 2rem;
+            width: 100%;
+            max-width: 950px;
+            justify-content: center;
+        }
+
+        .manual-card {
+            background-color: rgba(17, 30, 38, 0.85);
+            border: 2px solid var(--text-faded);
+            border-radius: 8px;
+            padding: 1.8rem;
+            flex: 1;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            text-align: center;
+            transition: border-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .manual-card:hover {
+            border-color: var(--text-foam);
+            transform: translateY(-3px);
+        }
+
+        .manual-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: var(--text-foam);
+        }
+
+        /* Pulsanti allineati allo stile generale dei box */
+        .download-btn {
+            font-family: 'Cinzel', serif;
+            background-color: rgba(17, 30, 38, 0.9);
+            color: var(--text-foam);
+            border: 2px solid var(--text-faded);
+            padding: 0.6rem 1.2rem;
+            font-size: 0.85rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background-color: var(--text-faded);
+            color: var(--bg-ocean);
+            border-color: var(--text-foam);
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(138, 160, 179, 0.6);
+        }
+
+        /* Avviso visivo discreto se l'autoplay viene bloccato */
+        #audio-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(17, 30, 38, 0.9);
+            border: 1px solid var(--border-brass);
+            color: var(--text-foam);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+        }
+
+        #audio-prompt.show {
+            opacity: 0.85;
+        }
+
+        footer {
+            text-align: center;
+            padding: 0.8rem;
+            color: var(--text-faded);
+            font-size: 0.8rem;
+            font-family: 'Cinzel', serif;
+            border-top: 1px solid var(--text-faded);
+            background-color: #070e12;
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 900px) {
+            header {
+                padding-bottom: 2.5rem;
+            }
+            .back-link {
+                position: static;
+                display: block;
+                margin-bottom: 1rem;
+                text-align: center;
+            }
+            .audio-container {
+                position: static;
+                margin-top: 1rem;
+                justify-content: center;
+            }
+            audio {
+                width: 100%;
+                max-width: 250px;
+            }
+            .header-logo-cappello { height: 100px; }
+            .header-logo-scritta { height: 50px; }
+            .section-title-box { max-width: 100%; height: 100px; }
+            .header-animated-text { font-size: 1.3rem; letter-spacing: 2px; }
+            .manuals-container {
+                flex-direction: column;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sfondi Mappa in dissolvenza -->
+    <div class="map-bg-container">
+        <img src="Mappa.jpg" alt="Mappa" class="map-bg active" id="map1">
+        <img src="mappaabsidia.jpg" alt="Mappa Absidia" class="map-bg" id="map2">
+    </div>
+
+    <!-- Avviso visivo discreto se l'autoplay viene bloccato -->
+    <div id="audio-prompt">[ Clicca sul player per attivare la musica ]</div>
+
+    <header>
+        <a href="portale.html" class="back-link">&larr; TORNA AL PORTALE</a>
+        
+        <!-- Player Audio in alto a destra -->
+        <div class="audio-container">
+            <audio id="bg-audio" controls loop preload="auto">
+                <source src="Protettori.mp3" type="audio/mpeg">
+                Il tuo browser non supporta l'elemento audio.
+            </audio>
+        </div>
+
+        <div class="header-stack-container">
+            <img src="Cappello.png" alt="Absidia Cappello" class="header-logo-cappello">
+            <div>
+                <img src="Logo Scritta.png" alt="ABSIDIA" class="header-logo-scritta">
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Riquadro del Titolo con frasi alternate in dissolvenza e zoom -->
+        <div class="section-title-box">
+            <div id="text1" class="header-animated-text visible">TOMI ABILITÀ</div>
+            <div id="text2" class="header-animated-text">COMING SOON...</div>
+        </div>
+
+        <!-- Nuovi Box Manuali / Download -->
+        <div class="manuals-container">
+            <div class="manual-card">
+                <div class="manual-title">ELAYA - AMBIENTAZIONE</div>
+                <a href="Elaya - Ambientazione.pdf" class="download-btn" target="_blank" rel="noopener noreferrer">DOWNLOAD</a>
+            </div>
+            <div class="manual-card">
+                <div class="manual-title">ABSIDIA - AMBIENTAZIONE</div>
+                <a href="Absidia - Ambientazione.pdf" class="download-btn" target="_blank" rel="noopener noreferrer">DOWNLOAD</a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Absidia - Un progetto di Elaya - Tutti i diritti riservati.</p>
+    </footer>
+
+    <script>
+        // --- Logica Alternanza Mappe di Sfondo ---
+        const mapBg1 = document.getElementById('map1');
+        const mapBg2 = document.getElementById('map2');
+
+        setInterval(() => {
+            mapBg1.classList.toggle('active');
+            mapBg2.classList.toggle('active');
+        }, 4000);
+
+        // --- Logica Alternanza Testo Dinamico (TOMI ABILITÀ <-> COMING SOON...) ---
+        const text1 = document.getElementById('text1');
+        const text2 = document.getElementById('text2');
+        let showFirstText = true;
+
+        setInterval(() => {
+            if (showFirstText) {
+                text1.classList.remove('visible');
+                text2.classList.add('visible');
+            } else {
+                text2.classList.remove('visible');
+                text1.classList.add('visible');
+            }
+            showFirstText = !showFirstText;
+        }, 4000);
+
+        // --- Gestione Audio ---
+        const audio = document.getElementById('bg-audio');
+        const audioPrompt = document.getElementById('audio-prompt');
+
+        audio.volume = 0.6;
+
+        window.onload = () => {
+            // Tenta l'avvio automatico (sfrutta l'ereditarietà se arrivi dal portale)
+            audio.play().then(() => {
+                audioPrompt.classList.remove('show');
+            }).catch(() => {
+                audioPrompt.classList.add('show');
+                
+                // Sblocco al primo clic sul documento se il browser dovesse bloccarlo
+                const unlockAudio = () => {
+                    audio.play().then(() => {
+                        audioPrompt.classList.remove('show');
+                        window.removeEventListener('click', unlockAudio);
+                    }).catch(() => {});
+                };
+                window.addEventListener('click', unlockAudio);
+            });
+        };
+    </script>
+
+</body>
+</html>
