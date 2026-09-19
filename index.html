@@ -150,25 +150,12 @@
             pointer-events: auto;
         }
 
-        /* Gruppi laterali completi di loghi e pulsanti */
+        /* Gruppi laterali completi di pulsanti */
         .button-group {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 0.8rem;
-        }
-
-        /* Stile dei loghi decorativi laterali */
-        .side-logo-top {
-            height: 50px;
-            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.9));
-            opacity: 0.85;
-        }
-
-        .side-logo-bottom {
-            height: 35px;
-            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.9));
-            opacity: 0.85;
         }
 
         /* Stile comune dei pulsanti di controllo */
@@ -252,14 +239,6 @@
                 min-width: unset;
             }
 
-            .side-logo-top {
-                height: 40px;
-            }
-
-            .side-logo-bottom {
-                height: 25px;
-            }
-
             .center-hat {
                 height: 80px;
             }
@@ -295,20 +274,16 @@
 
     <!-- Controlli a comparsa -->
     <div class="overlay-controls" id="overlayControls">
-        <!-- Sinistra: Logo sopra, Play, Pausa, Logo sotto -->
+        <!-- Sinistra: Solo pulsanti Play e Pausa -->
         <div class="button-group group-left">
-            <img src="Cappello.png" alt="Logo" class="side-logo-top">
             <button class="control-btn" id="playBtn">PLAY</button>
             <button class="control-btn" id="pauseBtn">PAUSA</button>
-            <img src="Logo Scritta.png" alt="Logo Scritta" class="side-logo-bottom">
         </div>
 
-        <!-- Destra: Logo sopra, Riavvia, Entra nel Portale, Logo sotto -->
+        <!-- Destra: Solo pulsanti Riavvia ed Entra nel Portale -->
         <div class="button-group group-right">
-            <img src="Cappello.png" alt="Logo" class="side-logo-top">
             <button class="control-btn" id="replayBtn">RIAVVIA</button>
             <button class="control-btn" id="enterBtn">ENTRA NEL PORTALE</button>
-            <img src="Logo Scritta.png" alt="Logo Scritta" class="side-logo-bottom">
         </div>
     </div>
 
