@@ -1,0 +1,2396 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absidia - Scheda Giocatore & Dashboard Master</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=IM+Fell+English:ital@0;1&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <!-- Libreria client di Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-ocean: #09131a;
+            --border-accent: #a9c6de;
+            --text-foam: #e6edf2;
+            --text-faded: #8aa0b3; 
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-ocean);
+            color: var(--text-foam);
+            font-family: 'IM Fell English', serif;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .map-bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            overflow: hidden;
+            background-color: var(--bg-ocean);
+        }
+
+        .map-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            filter: brightness(0.35) sepia(20%) hue-rotate(170deg);
+        }
+
+        .map-bg.active {
+            opacity: 1;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('Logo Completo.png');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 50% auto;
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        header {
+            position: relative;
+            text-align: center;
+            padding: 1.5rem 1rem;
+            background: linear-gradient(to bottom, rgba(5, 11, 15, 0.95), rgba(9, 19, 26, 0.8));
+            border-bottom: 1px solid var(--text-faded);
+        }
+
+        .header-stack-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .header-logo-cappello {
+            height: 90px;
+            width: auto;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.9)) sepia(30%) hue-rotate(170deg) saturate(70%);
+            opacity: 0.85;
+        }
+
+        .header-logo-scritta {
+            height: 45px;
+            width: auto;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.95));
+        }
+
+        /* Player Audio posizionato in alto a destra nell'intestazione */
+        .audio-container {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+        }
+
+        .audio-container audio {
+            width: 220px;
+            height: 30px;
+            filter: sepia(30%) hue-rotate(170deg) saturate(70%);
+            opacity: 0.85;
+            transition: opacity 0.3s ease;
+        }
+
+        .audio-container audio:hover {
+            opacity: 1;
+        }
+
+        main {
+            width: 95%;
+            max-width: 1350px;
+            margin: auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 0;
+            gap: 1.5rem;
+        }
+
+        /* Layout con griglia a 3 colonne (Istruzioni - Scheda - Azioni) */
+        .portal-layout {
+            display: flex;
+            width: 100%;
+            gap: 1.5rem;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .instructions-sidebar, .actions-sidebar {
+            background-color: rgba(17, 30, 38, 0.92);
+            border: 2px solid var(--text-faded);
+            border-radius: 6px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.7);
+            width: 280px;
+            min-width: 260px;
+            display: none; /* Nascosto di default, mostrato via JS al login */
+            font-size: 0.95rem;
+            color: var(--text-foam);
+            line-height: 1.5;
+        }
+
+        .instructions-sidebar h3, .actions-sidebar h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--border-accent);
+            font-size: 1.1rem;
+            margin-bottom: 0.8rem;
+            text-align: center;
+            border-bottom: 1px solid var(--text-faded);
+            padding-bottom: 0.4rem;
+        }
+
+        .instructions-sidebar p {
+            margin-bottom: 0.8rem;
+        }
+
+        .portal-card {
+            background-color: rgba(17, 30, 38, 0.92);
+            border: 2px solid var(--text-faded);
+            border-radius: 6px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.7);
+            flex-grow: 1;
+            max-width: 800px;
+        }
+
+        .portal-card h2 {
+            font-family: 'Cinzel', serif;
+            color: var(--text-foam);
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        /* Intestazione PDF standard nascosta a schermo, visibile in stampa PDF standard */
+        .print-header {
+            display: none;
+        }
+
+        /* Container Vademecum (nascosto a schermo, visibile solo in stampa Vademecum) */
+        #vademecum-card {
+            display: none;
+        }
+
+        .portal-card .login-instructions {
+            font-style: normal;
+            color: var(--text-faded);
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .sheet-nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0.4rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--text-faded);
+            padding-bottom: 0.8rem;
+            position: sticky;
+            top: 0;
+            background-color: rgba(17, 30, 38, 0.98);
+            z-index: 10;
+            padding-top: 0.5rem;
+        }
+
+        .tab-btn {
+            font-family: 'Cinzel', serif;
+            background-color: rgba(9, 19, 26, 0.8);
+            color: var(--text-faded);
+            border: 1px solid var(--text-faded);
+            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+            border-radius: 3px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            background-color: rgba(138, 160, 179, 0.2);
+            color: var(--text-foam);
+        }
+
+        .tab-btn.active {
+            background-color: var(--border-accent);
+            color: var(--bg-ocean);
+            border-color: var(--text-foam);
+            font-weight: bold;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active-pane {
+            display: block;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.6rem;
+            margin: 0.3rem 0;
+            background: rgba(9, 19, 26, 0.9);
+            border: 1px solid var(--text-faded);
+            color: var(--text-foam);
+            font-family: 'IM Fell English', serif;
+            font-size: 1rem;
+            border-radius: 4px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--border-accent);
+            box-shadow: 0 0 8px rgba(169, 198, 222, 0.35);
+        }
+
+        input:disabled, select:disabled, textarea:disabled {
+            background: rgba(5, 10, 14, 0.5);
+            color: var(--text-faded);
+            border-color: rgba(138, 160, 179, 0.3);
+            cursor: not-allowed;
+        }
+
+        .portal-btn {
+            font-family: 'Cinzel', serif;
+            background-color: rgba(17, 30, 38, 0.9);
+            color: var(--text-foam);
+            border: 2px solid var(--text-faded);
+            padding: 0.7rem 1.2rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            width: 100%;
+            margin-top: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .portal-btn:hover:not(:disabled) {
+            background-color: var(--text-faded);
+            color: var(--bg-ocean);
+            border-color: var(--text-foam);
+        }
+
+        .portal-btn:disabled {
+            background: rgba(5, 10, 14, 0.5);
+            color: var(--text-faded);
+            border-color: rgba(138, 160, 179, 0.2);
+            cursor: not-allowed;
+        }
+
+        .portal-btn.alt {
+            background-color: rgba(138, 160, 179, 0.15);
+            border-color: var(--text-faded);
+        }
+
+        .portal-btn.danger {
+            background-color: rgba(180, 50, 50, 0.2);
+            border-color: #b43232;
+        }
+
+        .portal-btn.danger:hover:not(:disabled) {
+            background-color: #b43232;
+            color: var(--text-foam);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--text-faded);
+            margin: 0.5rem 0 1rem 0;
+            padding-bottom: 0.3rem;
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            color: var(--text-faded);
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .field-group {
+            margin-bottom: 0.8rem;
+        }
+
+        .field-group label {
+            display: block;
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            color: var(--text-faded);
+            margin-bottom: 0.2rem;
+        }
+
+        .error {
+            color: #f87171;
+            font-size: 0.95rem;
+            margin-top: 0.8rem;
+            font-style: italic;
+            text-align: center;
+        }
+
+        /* Stile Popup Modale per i messaggi */
+        #custom-popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(5, 11, 15, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .custom-popup-box {
+            background-color: rgba(17, 30, 38, 0.98);
+            border: 2px solid var(--border-accent);
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+        }
+
+        .custom-popup-box h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--border-accent);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .custom-popup-box p {
+            font-size: 1.05rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-foam);
+        }
+
+        .abilities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            justify-content: center;
+            justify-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .ability-item {
+            width: 100%;
+            max-width: 320px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0.8rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .ability-item.inactive {
+            background: rgba(9, 19, 26, 0.6);
+            border: 1px dashed rgba(138, 160, 179, 0.25);
+        }
+        .ability-item.inactive .ability-name {
+            color: var(--text-faded);
+        }
+        .ability-item.inactive .ability-controls button {
+            background: rgba(138, 160, 179, 0.05);
+            border: 1px solid rgba(138, 160, 179, 0.1);
+            color: var(--text-faded);
+        }
+
+        .ability-item.available {
+            background: rgba(138, 160, 179, 0.15);
+            border: 1px solid rgba(138, 160, 179, 0.4);
+        }
+        .ability-item.available .ability-name {
+            color: var(--text-foam);
+        }
+        .ability-item.available .ability-controls button {
+            background: rgba(138, 160, 179, 0.2);
+            border: 1px solid var(--text-faded);
+            color: var(--text-foam);
+        }
+
+        .ability-item.active {
+            background-color: var(--border-accent);
+            border: 1px solid var(--text-foam);
+            box-shadow: 0 2px 8px rgba(169, 198, 222, 0.25);
+        }
+        .ability-item.active .ability-name {
+            color: var(--bg-ocean);
+            font-weight: bold;
+        }
+        .ability-item.active .ability-controls button {
+            background: var(--bg-ocean);
+            border: 1px solid var(--bg-ocean);
+            color: var(--text-foam);
+        }
+        .ability-item.active .ability-controls button:hover:not(:disabled) {
+            background: rgba(9, 19, 26, 0.8);
+        }
+
+        .ability-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ability-controls button {
+            width: 28px;
+            height: 28px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s ease;
+        }
+
+        .ability-controls button:disabled {
+            background: rgba(5, 10, 14, 0.3);
+            color: var(--text-faded);
+            border-color: rgba(138, 160, 179, 0.2);
+            cursor: not-allowed;
+        }
+
+        .ability-popup {
+            display: none;
+            position: absolute;
+            bottom: 105%;
+            left: 0;
+            width: 100%;
+            background-color: rgb(14, 25, 32);
+            border: 1px solid var(--border-accent);
+            color: var(--text-foam);
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.9);
+            z-index: 20;
+            text-align: center;
+            font-family: 'IM Fell English', serif;
+            pointer-events: none;
+        }
+
+        .magic-columns {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.8rem;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 0.3rem;
+        }
+
+        .magic-col h4 {
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            text-align: center;
+            color: var(--text-faded);
+            margin-bottom: 0.5rem;
+        }
+
+        .master-card-item {
+            background: rgba(9, 19, 26, 0.8);
+            border: 1px solid var(--text-faded);
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .master-card-info h4 {
+            font-family: 'Cinzel', serif;
+            color: var(--text-foam);
+            font-size: 1rem;
+        }
+
+        .master-card-info p {
+            font-size: 0.85rem;
+            color: var(--text-faded);
+        }
+
+        footer {
+            text-align: center;
+            padding: 0.8rem;
+            color: var(--text-faded);
+            font-size: 0.8rem;
+            font-family: 'Cinzel', serif;
+            border-top: 1px solid var(--text-faded);
+            background-color: #070e12;
+        }
+
+        /* Stili di Stampa Dedicati */
+        @media print {
+            body.print-standard {
+                background: #09131a !important;
+                color: #e6edf2 !important;
+                font-size: 9pt !important;
+                line-height: 1.3 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            body.print-standard @page {
+                size: A4;
+                margin: 10mm;
+            }
+
+            body.print-vademecum {
+                background: #09131a !important;
+                color: #e6edf2 !important;
+                font-size: 8.5pt !important;
+                line-height: 1.2 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            body.print-vademecum @page {
+                size: A6 landscape;
+                margin: 6mm;
+            }
+
+            /* Nascondi elementi comuni non necessari in stampa */
+            body .map-bg-container, 
+            body header, 
+            body footer, 
+            body .instructions-sidebar, 
+            body .actions-sidebar, 
+            body .sheet-nav-tabs, 
+            body .portal-layout,
+            body .audio-container, 
+            body #custom-popup-overlay {
+                display: none !important;
+            }
+
+            /* Stampa PDF Standard */
+            body.print-standard .portal-layout {
+                display: flex !important;
+            }
+            body.print-standard .portal-card {
+                background: rgba(17, 30, 38, 0.98) !important;
+                border: 2px solid #a9c6de !important;
+                border-radius: 8px !important;
+                box-shadow: 0 0 15px rgba(0,0,0,0.8) !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 15px !important;
+                display: block !important;
+            }
+            body.print-standard #vademecum-card {
+                display: none !important;
+            }
+            body.print-standard .print-header {
+                display: flex !important;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                border-bottom: 2px solid #a9c6de;
+                margin-bottom: 12px;
+                padding-bottom: 8px;
+                text-align: center;
+            }
+            body.print-standard .print-logo-cappello {
+                height: 55px;
+                width: auto;
+                filter: drop-shadow(0 2px 5px rgba(0,0,0,0.9)) sepia(30%) hue-rotate(170deg) saturate(70%);
+            }
+            body.print-standard .print-logo-scritta {
+                height: 30px;
+                width: auto;
+                margin-top: 4px;
+            }
+            body.print-standard .print-subtitle {
+                font-family: 'Cinzel', serif;
+                font-size: 7.5pt;
+                color: #8aa0b3;
+                letter-spacing: 2px;
+                margin-top: 4px;
+            }
+            body.print-standard .portal-card > h2 {
+                display: none !important;
+            }
+            body.print-standard .tab-pane {
+                display: none !important;
+            }
+            body.print-standard #pane-dati, 
+            body.print-standard #pane-abilita, 
+            body.print-standard #pane-inventario, 
+            body.print-standard #pane-diario, 
+            body.print-standard #pane-background {
+                display: block !important;
+            }
+            body.print-standard #pane-abilita {
+                page-break-after: always;
+            }
+            body.print-standard .ability-item.inactive, body.print-standard .ability-item.available {
+                display: none !important;
+            }
+            body.print-standard .ability-item.active {
+                display: flex !important;
+                border: 1px solid #a9c6de !important;
+                background: rgba(9, 19, 26, 0.9) !important;
+                padding: 3px 6px !important;
+                margin-bottom: 3px !important;
+                border-radius: 3px;
+            }
+            body.print-standard .ability-name {
+                color: #e6edf2 !important;
+                font-size: 8.5pt !important;
+                font-family: 'Cinzel', serif;
+            }
+
+            /* Stampa Vademecum */
+            body.print-vademecum #vademecum-card {
+                display: block !important;
+                background: rgba(17, 30, 38, 0.96) !important;
+                border: 2px solid #a9c6de !important;
+                border-radius: 6px !important;
+                padding: 10px !important;
+                width: 100% !important;
+                position: relative;
+                overflow: hidden;
+            }
+            body.print-vademecum #vademecum-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-image: url('Logo Completo.png');
+                background-position: center;
+                background-repeat: no-repeat;
+                background-size: 40% auto;
+                opacity: 0.08;
+                pointer-events: none;
+                z-index: 0;
+            }
+            body.print-vademecum .vd-content {
+                position: relative;
+                z-index: 1;
+            }
+            body.print-vademecum .vd-header {
+                text-align: center;
+                border-bottom: 1.5px solid #a9c6de;
+                padding-bottom: 4px;
+                margin-bottom: 6px;
+            }
+            body.print-vademecum .vd-header h3 {
+                font-family: 'Cinzel', serif;
+                font-size: 10pt;
+                color: #e6edf2;
+                letter-spacing: 1px;
+            }
+            body.print-vademecum .vd-header p {
+                font-family: 'Cinzel', serif;
+                font-size: 7pt;
+                color: #8aa0b3;
+            }
+            body.print-vademecum .vd-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 4px 8px;
+                margin-bottom: 6px;
+                font-size: 8pt;
+            }
+            body.print-vademecum .vd-item span {
+                color: #8aa0b3;
+                font-family: 'Cinzel', serif;
+            }
+            body.print-vademecum .vd-section {
+                margin-top: 4px;
+                border-top: 1px dashed rgba(138, 160, 179, 0.4);
+                padding-top: 3px;
+            }
+            body.print-vademecum .vd-section-title {
+                font-family: 'Cinzel', serif;
+                font-size: 8pt;
+                color: #a9c6de;
+                font-weight: bold;
+                margin-bottom: 2px;
+            }
+            body.print-vademecum .vd-section-body {
+                font-size: 7.5pt;
+                color: #e6edf2;
+                line-height: 1.25;
+            }
+        }
+
+        @media(max-width: 1200px) {
+            .portal-layout {
+                flex-direction: column;
+                align-items: center;
+            }
+            .instructions-sidebar, .actions-sidebar {
+                width: 100%;
+                max-width: 800px;
+            }
+        }
+
+        @media(max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .magic-columns { grid-template-columns: 1fr 1fr; }
+            .audio-container { position: relative; top: auto; right: auto; margin-top: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Popup Modale Globale -->
+    <div id="custom-popup-overlay">
+        <div class="custom-popup-box">
+            <h3 id="custom-popup-title">Notifica</h3>
+            <p id="custom-popup-text">Messaggio...</p>
+            <button class="portal-btn alt" onclick="chiudiPopupMessaggio()" style="margin-top: 0;">Chiudi</button>
+        </div>
+    </div>
+
+    <div class="map-bg-container">
+        <img src="Mappa.jpg" alt="Mappa" class="map-bg active" id="map1">
+        <img src="mappaabsidia.jpg" alt="Mappa Absidia" class="map-bg" id="map2">
+    </div>
+
+    <header>
+        <div class="header-stack-container">
+            <img src="Cappello.png" alt="Absidia Cappello" class="header-logo-cappello">
+            <img src="Logo Scritta.png" alt="ABSIDIA" class="header-logo-scritta">
+        </div>
+        <!-- Player Audio in alto a destra nell'intestazione -->
+        <div class="audio-container">
+            <audio id="bgAudio" autoplay controls loop>
+                <source src="Protettori.mp3" type="audio/mpeg">
+                Il tuo browser non supporta l'elemento audio.
+            </audio>
+        </div>
+    </header>
+
+    <main>
+        <!-- CARD VADEMECUM FORMATO BIGLIETTO DA VISITA (Spostata all'esterno per la stampa corretta) -->
+        <div id="vademecum-card">
+            <div class="vd-content">
+                <div class="vd-header">
+                    <h3 id="vd-nome-pg">Nome Personaggio</h3>
+                    <p>VADEMECUM TASCABILE — REGNO DI ELAYA</p>
+                </div>
+                <div class="vd-grid">
+                    <div class="vd-item"><span>Giocatore:</span> <strong id="vd-nome-giocatore">-</strong></div>
+                    <div class="vd-item"><span>Punti Ferita:</span> <strong id="vd-pf">-</strong></div>
+                    <div class="vd-item"><span>Essenza Volontà:</span> <strong id="vd-volonta">-</strong></div>
+                    <div class="vd-item"><span>Essenze Magia:</span> <strong id="vd-essenze-magia">-</strong></div>
+                </div>
+                <div id="vd-sezioni-dinamiche"></div>
+            </div>
+        </div>
+
+        <div class="portal-layout">
+            <!-- Box istruzioni laterale a sinistra (visibile solo dopo il login) -->
+            <div id="instructions-sidebar" class="instructions-sidebar">
+                <h3>Istruzioni</h3>
+                <p>Se stai generando un nuovo personaggio o è la prima volta che crei una scheda, clicca sul pulsante <strong>Crea Scheda</strong> e, non appena avrai finito clicca sul pulsante <strong>Salva Scheda</strong>.</p>
+                <p>Ricorda che non potrai tornare indietro sulle tue scelte riguardo le abilità apprese o incrementate, né potrai cambiare magie, ricette e/o lavorazioni, una volta selezionate.</p>
+                <p>Se hai commesso un errore in fase di creazione, rivolgiti ai master che provvederanno in merito.</p>
+                <p>Una volta effettuato il primo salvataggio, per modificare e/o aggiornare la scheda dovrai cliccare sul pulsante <strong>Aggiorna Scheda</strong>.</p>
+                <p style="margin-top: 1rem; font-style: italic;">Ti auguriamo buon divertimento,<br><strong>Lo staff di Absidia</strong></p>
+            </div>
+
+            <!-- SCHEDA PRINCIPALE -->
+            <div class="portal-card">
+                <h2>Scheda Giocatore</h2>
+                <!-- Intestazione grafica dedicata al PDF Standard (visibile solo in stampa standard) -->
+                <div class="print-header">
+                    <img src="Cappello.png" alt="Absidia Cappello" class="print-logo-cappello">
+                    <img src="Logo Scritta.png" alt="ABSIDIA" class="print-logo-scritta">
+                    <p class="print-subtitle">REGNO DI ELAYA — PORTALE UFFICIALE DEL PERSONAGGIO</p>
+                </div>
+
+                <!-- Testo esplicativo visibile solo nella fase di login -->
+                <span id="login-instructions" class="login-instructions">Inserisci la tua mail e password per effettuare il login, oppure registrati inserendo una email valida ed una password di 8 caratteri contenente almeno un carattere speciale, un numero, una lettera maiuscola ed una lettera minuscola.</span>
+
+                <!-- SEZIONE LOGIN / REGISTRAZIONE -->
+                <div id="auth-section">
+                    <input type="email" id="email" placeholder="Email del Giocatore">
+                    <input type="password" id="password" placeholder="Password">
+                    <button class="portal-btn alt" onclick="signIn()">Accedi</button>
+                    <button class="portal-btn" onclick="signUp()">Registrati</button>
+                    <button class="portal-btn danger" onclick="passwordDimenticata()">Password dimenticata?</button>
+                    <p style="font-size: 0.8rem; color: var(--text-faded); margin-top: 0.3rem; text-align: center;">Se hai dimenticato la password inserisci la tua mail nel relativo campo e clicca sul pulsante qui sopra</p>
+                    <div id="error-message" class="error"></div>
+                </div>
+
+                <!-- SEZIONE DASHBOARD MASTER -->
+                <div id="master-dashboard" style="display: none;">
+                    <div class="section-header">
+                        <span class="section-title">Panoramica Globale Campagna (Master)</span>
+                    </div>
+                    <p style="color: var(--text-faded); font-size: 0.9rem; margin-bottom: 1rem; font-style: italic;">
+                        Benvenuto Master. Seleziona una scheda sottostante per ispezionarla, modificarla o accreditare PE, oppure utilizza i comandi globali.
+                    </p>
+                    <div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="portal-btn alt" onclick="accreditaPezziGlobali(1)">+1 PE a Tutti</button>
+                        <button class="portal-btn alt" onclick="accreditaPezziGlobali(5)">+5 PE a Tutti</button>
+                        <button class="portal-btn" onclick="creaNuovaSchedaMaster()">Crea Scheda Ex Novo</button>
+                    </div>
+                    <div id="master-lista-schede"></div>
+                    <button class="portal-btn danger" style="margin-top: 1.5rem;" onclick="signOut()">Esci dal Portale</button>
+                </div>
+
+                <!-- SEZIONE SCHEDA GIOCATORE PROTETTA -->
+                <div id="profile-section" style="display: none;">
+                    
+                    <button id="btn-torna-master" class="portal-btn alt" onclick="tornaAllaDashboardMaster()" style="display: none; margin-bottom: 1rem;">← Torna alla Lista Schede (Master)</button>
+
+                    <!-- MENU DI NAVIGAZIONE A SCHEDE (TAB) -->
+                    <div class="sheet-nav-tabs">
+                        <button class="tab-btn active" onclick="switchTab('pane-dati', this)">Profilo</button>
+                        <button class="tab-btn" onclick="switchTab('pane-abilita', this)">Abilità</button>
+                        <button class="tab-btn" onclick="switchTab('pane-incantesimi', this)">Arcani</button>
+                        <button class="tab-btn" onclick="switchTab('pane-miracoli', this)">Miracoli</button>
+                        <button class="tab-btn" onclick="switchTab('pane-evocazioni', this)">Evocazioni</button>
+                        <button class="tab-btn" onclick="switchTab('pane-canalizzazioni', this)">Canalizzazioni</button>
+                        <button class="tab-btn" onclick="switchTab('pane-ricette-fattucchiere', this)">Fattucchiere</button>
+                        <button class="tab-btn" onclick="switchTab('pane-reazioni-alchimia', this)">Alchimia</button>
+                        <button class="tab-btn" onclick="switchTab('pane-lavorazioni-fabbro', this)">Fabbro</button>
+                        <button class="tab-btn" onclick="switchTab('pane-lavorazioni-sarto', this)">Sarto</button>
+                        <button class="tab-btn" onclick="switchTab('pane-lavorazioni-carpenteria', this)">Carpenteria</button>
+                        <button class="tab-btn" onclick="switchTab('pane-lavorazioni-lapidario', this)">Lapidario</button>
+                        <button class="tab-btn" onclick="switchTab('pane-inventario', this)">Inventario</button>
+                        <button class="tab-btn" onclick="switchTab('pane-diario', this)">Diario</button>
+                        <button class="tab-btn" onclick="switchTab('pane-background', this)">Background</button>
+                    </div>
+
+                    <!-- 1. DATI GENERALI -->
+                    <div id="pane-dati" class="tab-pane active-pane">
+                        <div class="section-header">
+                            <span class="section-title">1. Dati Generali</span>
+                        </div>
+                        <div class="grid-2">
+                            <div class="field-group">
+                                <label>Nome Giocatore</label>
+                                <input type="text" id="gen-giocatore" placeholder="Nome e Cognome" disabled>
+                            </div>
+                            <div class="field-group">
+                                <label>Email</label>
+                                <input type="text" id="user-email" disabled>
+                            </div>
+                            <div class="field-group">
+                                <label>Nome Personaggio</label>
+                                <input type="text" id="gen-personaggio" placeholder="Nome del personaggio" disabled>
+                            </div>
+                            <div class="field-group">
+                                <label>Razza</label>
+                                <input type="text" id="gen-razza" value="Umano" disabled>
+                            </div>
+                            <div class="field-group">
+                                <label>Religione</label>
+                                <input type="text" id="gen-religione" placeholder="Religione di culto" disabled>
+                            </div>
+                            <div class="field-group">
+                                <label>Età</label>
+                                <input type="number" id="gen-eta" placeholder="Età" disabled>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label>Provenienza (Regione)</label>
+                            <select id="gen-provenienza-regione" disabled>
+                                <option value="">Seleziona regione...</option>
+                                <option value="Elaya">Elaya</option>
+                                <option value="Absidia">Absidia</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label>Provenienza (Dettaglio Libero)</label>
+                            <input type="text" id="gen-provenienza-libera" placeholder="Città o luogo d'origine" disabled>
+                        </div>
+
+                        <div class="grid-2" style="margin-top: 1rem;">
+                            <div class="field-group"><label>Punti Ferita (Calcolati)</label><input type="text" id="gen-pf" value="3" disabled></div>
+                            <div class="field-group"><label>Essenze Volontà (Calcolati)</label><input type="text" id="gen-volonta" value="0" disabled></div>
+                            <div class="field-group"><label>Essenze Magia Comuni</label><input type="text" id="gen-cm-comuni" value="0" disabled></div>
+                            <div class="field-group"><label>Essenze Magia Non Comuni</label><input type="text" id="gen-cm-non-comuni" value="0" disabled></div>
+                            <div class="field-group"><label>Essenze Magia Rare</label><input type="text" id="gen-cm-rari" value="0" disabled></div>
+                            <div class="field-group"><label>Essenze Magia Leggendarie</label><input type="text" id="gen-cm-leggendari" value="0" disabled></div>
+                            <div class="field-group"><label>Punti Creazione</label><input type="text" id="gen-pc" value="25" disabled></div>
+                            <div class="field-group"><label>Punti Esperienza (PE)</label><input type="text" id="gen-pe" value="0" disabled></div>
+                        </div>
+                    </div>
+
+                    <!-- 2. ABILITA' -->
+                    <div id="pane-abilita" class="tab-pane">
+                        <div class="section-header">
+                            <span class="section-title">2. Abilità</span>
+                            <span style="font-family: 'Cinzel', serif; font-size: 0.9rem; color: var(--text-faded);">
+                                PC: <strong id="abilita-pc-disp" style="color: var(--text-foam);">25</strong> | PE: <strong id="abilita-pe-disp" style="color: var(--text-foam);">0</strong>
+                            </span>
+                        </div>
+                        <div id="abilita-container" style="margin-bottom: 1.5rem;">
+                            <p style="color: var(--text-faded); font-style: italic;">Caricamento abilità...</p>
+                        </div>
+                    </div>
+
+                    <!-- 3. INCANTESIMI ARCANI -->
+                    <div id="pane-incantesimi" class="tab-pane">
+                        <div class="section-header">
+                            <span class="section-title">3. Incantesimi Arcani</span>
+                        </div>
+                        <div class="magic-columns">
+                            <div class="magic-col"><h4>Comuni</h4><div id="magie-comuni"></div></div>
+                            <div class="magic-col"><h4>Non Comuni</h4><div id="magie-non-comuni"></div></div>
+                            <div class="magic-col"><h4>Rare</h4><div id="magie-rare"></div></div>
+                            <div class="magic-col"><h4>Leggendarie</h4><div id="magie-leggendarie"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- 4. MIRACOLI DIVINI -->
+                    <div id="pane-miracoli" class="tab-pane">
+                        <div class="section-header">
+                            <span class="section-title">4. Miracoli Divini</span>
+                        </div>
+                        <div class="magic-columns">
+                            <div class="magic-col"><h4>Comuni</h4><div id="miracoli-comuni"></div></div>
+                            <div class="magic-col"><h4>Non Comuni</h4><div id="miracoli-non-comuni"></div></div>
+                            <div class="magic-col"><h4>Rare</h4><div id="miracoli-rare"></div></div>
+                            <div class="magic-col"><h4>Leggendarie</h4><div id="miracoli-leggendarie"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- 5. EVOCAZIONI DRUIDICHE -->
+                    <div id="pane-evocazioni" class="tab-pane">
+                        <div class="section-header">
+                            <span class="section-title">5. Evocazioni Druidiche</span>
+                        </div>
+                        <div class="magic-columns">
+                            <div class="magic-col"><h4>Comuni</h4><div id="evocazioni-comuni"></div></div>
+                            <div class="magic-col"><h4>Non Comuni</h4><div id="evocazioni-non-comuni"></div></div>
+                            <div class="magic-col"><h4>Rare</h4><div id="evocazioni-rare"></div></div>
+                            <div class="magic-col"><h4>Leggendarie</h4><div id="evocazioni-leggendarie"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- 6. CANALIZZAZIONI MISTICHE -->
+                    <div id="pane-canalizzazioni" class="tab-pane">
+                        <div class="section-header">
+                            <span class="section-title">6. Canalizzazioni Mistiche</span>
+                        </div>
+                        <div class="magic-columns">
+                            <div class="magic-col"><h4>Comuni</h4><div id="canalizzazioni-comuni"></div></div>
+                            <div class="magic-col"><h4>Non Comuni</h4><div id="canalizzazioni-non-comuni"></div></div>
+                            <div class="magic-col"><h4>Rare</h4><div id="canalizzazioni-rare"></div></div>
+                            <div class="magic-col"><h4>Leggendarie</h4><div id="canalizzazioni-leggendarie"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- 7. RICETTE DA FATTUCCHIERE -->
+                    <div id="pane-ricette-fattucchiere" class="tab-pane">
+                        <div class="section-header">
+                            <span class="section-title">7. Ricette da Fattucchiere</span>
+                        </div>
+                        <div class="magic-columns">
+                            <div class="magic-col"><h4>Comuni</h4><div id="ricette-fattucchiere-comuni"></div></div>
+                            <div class="magic-col"><h4>Non Comuni</h4><div id="ricette-fattucchiere-non-comuni"></div></div>
+                            <div class="magic-col"><h4>Rare</h4><div id="ricette-fattucchiere-rare"></div></div>
+                            <div class="magic-col"><h4>Leggendarie</h4><div id="ricette-fattucchiere-leggendarie"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- 8. REAZIONI DI ALCHIMIA -->
+                    <div id="pane-reazioni-alchimia" class="tab-pane">
+                        <div class="section-header">
+                            <span class="section-title">8. Reazioni di Alchimia</span>
+                        </div>
+                        <div class="magic-columns">
+                            <div class="magic-col"><h4>Comuni</h4><div id="reazioni-alchimia-comuni"></div></div>
+                            <div class="magic-col"><h4>Non Comuni</h4><div id="reazioni-alchimia-non-comuni"></div></div>
+                            <div class="magic-col"><h4>Rare</h4><div id="reazioni-alchimia-rare"></div></div>
+                            <div class="magic-col"><h4>Leggendarie</h4><div id="reazioni-alchimia-leggendarie"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- 9. LAVORAZIONI FABBRO -->
+                    <div id="pane-lavorazioni-fabbro" class="tab-pane">
+                        <div class="section-header">
+                            <span class="section-title">9. Lavorazioni Fabbro</span>
+                        </div>
+                        <div class="magic-columns">
+                            <div class="magic-col"><h4>Comuni</h4><div id="lavorazioni-fabbro-comuni"></div></div>
+                            <div class="magic-col"><h4>Non Comuni</h4><div id="lavorazioni-fabbro-non-comuni"></div></div>
+                            <div class="magic-col"><h4>Rare</h4><div id="lavorazioni-fabbro-rare"></div></div>
+                            <div class="magic-col"><h4>Leggendarie</h4><div id="lavorazioni-fabbro-leggendarie"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- 10. LAVORAZIONI SARTO -->
+                    <div id="pane-lavorazioni-sarto" class="tab-pane">
+                        <div class="section-header">
+                            <span class="section-title">10. Lavorazioni Sarto</span>
+                        </div>
+                        <div class="magic-columns">
+                            <div class="magic-col"><h4>Comuni</h4><div id="lavorazioni-sarto-comuni"></div></div>
+                            <div class="magic-col"><h4>Non Comuni</h4><div id="lavorazioni-sarto-non-comuni"></div></div>
+                            <div class="magic-col"><h4>Rare</h4><div id="lavorazioni-sarto-rare"></div></div>
+                            <div class="magic-col"><h4>Leggendarie</h4><div id="lavorazioni-sarto-leggendarie"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- 11. LAVORAZIONI CARPENTERIA -->
+                    <div id="pane-lavorazioni-carpenteria" class="tab-pane">
+                        <div class="section-header">
+                            <span class="section-title">11. Lavorazioni Carpenteria</span>
+                        </div>
+                        <div class="magic-columns">
+                            <div class="magic-col"><h4>Comuni</h4><div id="lavorazioni-carpenteria-comuni"></div></div>
+                            <div class="magic-col"><h4>Non Comuni</h4><div id="lavorazioni-carpenteria-non-comuni"></div></div>
+                            <div class="magic-col"><h4>Rare</h4><div id="lavorazioni-carpenteria-rare"></div></div>
+                            <div class="magic-col"><h4>Leggendarie</h4><div id="lavorazioni-carpenteria-leggendarie"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- 12. LAVORAZIONI LAPIDARIO -->
+                    <div id="pane-lavorazioni-lapidario" class="tab-pane">
+                        <div class="section-header">
+                            <span class="section-title">12. Lavorazioni Lapidario</span>
+                        </div>
+                        <div class="magic-columns">
+                            <div class="magic-col"><h4>Comuni</h4><div id="lavorazioni-lapidario-comuni"></div></div>
+                            <div class="magic-col"><h4>Non Comuni</h4><div id="lavorazioni-lapidario-non-comuni"></div></div>
+                            <div class="magic-col"><h4>Rare</h4><div id="lavorazioni-lapidario-rare"></div></div>
+                            <div class="magic-col"><h4>Leggendarie</h4><div id="lavorazioni-lapidario-leggendarie"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- INVENTARIO -->
+                    <div id="pane-inventario" class="tab-pane">
+                        <div class="section-header">
+                            <span class="section-title">Inventario</span>
+                        </div>
+                        <textarea id="txt-inventario" rows="6" placeholder="Elenca ciò che porti al seguito..." disabled></textarea>
+                    </div>
+
+                    <!-- DIARIO -->
+                    <div id="pane-diario" class="tab-pane">
+                        <div class="section-header">
+                            <span class="section-title">Diario</span>
+                        </div>
+                        <textarea id="txt-diario" rows="6" placeholder="La storia personale del tuo personaggio..." disabled></textarea>
+                    </div>
+
+                    <!-- BACKGROUND -->
+                    <div id="pane-background" class="tab-pane">
+                        <div class="section-header">
+                            <span class="section-title">Background</span>
+                        </div>
+                        <textarea id="txt-background" rows="6" placeholder="Il background e le origini del tuo personaggio..." disabled></textarea>
+                    </div>
+
+                    <div id="sheet-message" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Box azioni laterale a destra (visibile solo dopo il login) -->
+            <div id="actions-sidebar" class="actions-sidebar">
+                <h3>Azioni Scheda</h3>
+                <p style="font-size: 0.85rem; color: var(--text-faded); margin-bottom: 1rem; text-align: center;">Gestisci lo stato del tuo personaggio</p>
+                <button id="btn-crea" class="portal-btn" onclick="abilitaCreazioneScheda()" disabled>Crea Scheda</button>
+                <button id="btn-aggiorna" class="portal-btn alt" onclick="abilitaAggiornamentoScheda()" disabled>Aggiorna Scheda</button>
+                <button id="btn-salva" class="portal-btn alt" onclick="salvaScheda()" disabled>Salva Scheda</button>
+                <button id="btn-pdf" class="portal-btn alt" onclick="esportaPdf()">Esporta PDF</button>
+                <button id="btn-vademecum" class="portal-btn alt" onclick="esportaVademecum()">Esporta Vademecum</button>
+                <button id="btn-esci" class="portal-btn danger" onclick="signOut()">Esci</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Absidia - Un progetto di Elaya - Tutti i diritti riservati.</p>
+    </footer>
+
+    <script>
+        // Avvia l'audio al primo movimento del mouse se bloccato dal browser
+        document.addEventListener('mousemove', function() {
+            const audio = document.getElementById('bgAudio');
+            if (audio && audio.paused) {
+                audio.play().catch(error => {
+                    console.log("Riproduzione automatica impedita dal browser:", error);
+                });
+            }
+        }, { once: true });
+
+        const map1 = document.getElementById('map1');
+        const map2 = document.getElementById('map2');
+        setInterval(() => {
+            map1.classList.toggle('active');
+            map2.classList.toggle('active');
+        }, 4000);
+
+        function mostraPopup(titolo, testo) {
+            document.getElementById('custom-popup-title').innerText = titolo;
+            document.getElementById('custom-popup-text').innerText = testo;
+            document.getElementById('custom-popup-overlay').style.display = 'flex';
+        }
+
+        function chiudiPopupMessaggio() {
+            document.getElementById('custom-popup-overlay').style.display = 'none';
+        }
+
+        window.esportaPdf = function() {
+            document.body.classList.remove('print-vademecum');
+            document.body.classList.add('print-standard');
+            window.print();
+        };
+
+        window.esportaVademecum = function() {
+            // Raccoglie i dati e popola il biglietto tascabile prima della stampa
+            document.getElementById('vd-nome-pg').innerText = document.getElementById('gen-personaggio').value || 'Senza Nome';
+            document.getElementById('vd-nome-giocatore').innerText = document.getElementById('gen-giocatore').value || '-';
+            document.getElementById('vd-pf').innerText = document.getElementById('gen-pf').value || '3';
+            document.getElementById('vd-volonta').innerText = document.getElementById('gen-volonta').value || '0';
+            
+            let cComuni = document.getElementById('gen-cm-comuni').value || 0;
+            let cNonComuni = document.getElementById('gen-cm-non-comuni').value || 0;
+            let cRari = document.getElementById('gen-cm-rari').value || 0;
+            let cLegg = document.getElementById('gen-cm-leggendari').value || 0;
+            document.getElementById('vd-essenze-magia').innerText = `Comuni: ${cComuni} | Non Comuni: ${cNonComuni} | Rare: ${cRari} | Leggendarie: ${cLegg}`;
+
+            // Mappa delle sezioni magiche/lavorazioni da verificare e inserire se valorizzate
+            const categorieVademecum = [
+                { prefix: 'magie', titolo: 'Incantesimi Arcani' },
+                { prefix: 'miracoli', titolo: 'Miracoli Divini' },
+                { prefix: 'evocazioni', titolo: 'Evocazioni Druidiche' },
+                { prefix: 'canalizzazioni', titolo: 'Canalizzazioni Mistiche' },
+                { prefix: 'lavorazioni-fabbro', titolo: 'Lavorazioni Fabbro' },
+                { prefix: 'ricette-fattucchiere', titolo: 'Ricette da Fattucchiere' },
+                { prefix: 'reazioni-alchimia', titolo: 'Reazioni di Alchimia' },
+                { prefix: 'lavorazioni-carpenteria', titolo: 'Lavorazioni Carpenteria' },
+                { prefix: 'lavorazioni-sarto', titolo: 'Lavorazioni Sartoria' },
+                { prefix: 'lavorazioni-lapidario', titolo: 'Lavorazioni Lapidario' }
+            ];
+
+            let htmlSezioni = '';
+            categorieVademecum.forEach(cat => {
+                let elementiTrovati = [];
+                ['comuni', 'non-comuni', 'rare', 'leggendarie'].forEach(livello => {
+                    let containerLiv = document.getElementById(`${cat.prefix}-${livello}`);
+                    if (containerLiv) {
+                        containerLiv.querySelectorAll('select, input').forEach(el => {
+                            if (el.value && el.value.trim() !== '') {
+                                elementiTrovati.push(el.value);
+                            }
+                        });
+                    }
+                });
+
+                if (elementiTrovati.length > 0) {
+                    htmlSezioni += `
+                        <div class="vd-section">
+                            <div class="vd-section-title">${cat.titolo}</div>
+                            <div class="vd-section-body">${elementiTrovati.join(', ')}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            document.getElementById('vd-sezioni-dinamiche').innerHTML = htmlSezioni;
+
+            document.body.classList.remove('print-standard');
+            document.body.classList.add('print-vademecum');
+            window.print();
+        };
+
+        const SUPABASE_URL = 'https://mblrwjzrbvddurmlgvlf.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Yk7HgEemUbfqMAxgjVHygQ_UVenqgio';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                storage: window.sessionStorage,
+                persistSession: true,
+                autoRefreshToken: true,
+            }
+        });
+
+        const cataloghiMagie = {
+            magie: {
+                comuni: [
+                    "Luce", "Scassinare", "Lucchetto magico", "Incanta pergamena", 
+                    "Armatura magica", "Stretta folgorante", "Individuazione del magico", 
+                    "Ragnatela", "Presa salda", "Annullare l'udito"
+                ],
+                "non-comuni": [
+                    "Scassinare migliorato", "Stretta folgorante superiore", "Mani scivolose", 
+                    "Armatura magica migliorata", "Individuazione del magico superiore", 
+                    "Incuti paura", "Arma magica", "Annullare la vista"
+                ],
+                rare: [
+                    "Scassinare superiore", "Dardo incantato", "Annullare la voce", 
+                    "Armatura magica superiore", "Terrorizzare", "Circolo di protezione"
+                ],
+                leggendarie: [
+                    "Dardo incantato Superiore", "Sonno", "Dissolvi", "Arma magica superiore"
+                ]
+            },
+            miracoli: {
+                comuni: [
+                    "Imposizioni delle mani", "Ritarda malattia", "Contagio", 
+                    "Protezione divina", "Stanchezza", "Preghiera", "Santificare", 
+                    "Oltretomba", "Scudo divino", "Maledire"
+                ],
+                "non-comuni": [
+                    "Imposizioni delle mani migliorato", "Protezione divina migliorato", 
+                    "Contagio migliorato", "Santificare migliorato", "Bagliore divino", 
+                    "Lama divina", "Ritorna in te", "Rimuovi malattia"
+                ],
+                rare: [
+                    "Imposizione delle mani superiore", "Protezione divina superiore", 
+                    "Ritorna in te migliorato", "Cura di massa", "Maledire migliorato", "Spezza volontà"
+                ],
+                leggendarie: [
+                    "Risanamento", "Cura di massa migliorato", "Spezza volontà migliorato", "Spezza maledizioni"
+                ]
+            },
+            evocazioni: {
+                comuni: [
+                    "Bacche benefiche", "Individuazione nel vento", "Tocco di fuoco", 
+                    "Pelle di pietra", "Fiammella", "Crescita spinosa", "Scossa", 
+                    "Soffio benefico", "Sanifica cibo e bevande", "Corrompere"
+                ],
+                "non-comuni": [
+                    "Bacche benefiche migliorato", "Individuazione nella terra", "Brusca folata", 
+                    "Pelle di pietra migliorato", "Tocco di fuoco", "Lama infuocata", 
+                    "Comunicare con la natura", "Vortice di sabbia"
+                ],
+                rare: [
+                    "Bacche benefiche superiore", "Pelle di pietra superiore", "Palla di neve", 
+                    "Corrompere migliorato", "Durezza della pietra", "Ferro rovente"
+                ],
+                leggendarie: [
+                    "Tocco gelido", "Crescita spinosa migliorata", "Arma naturale", "Palla di neve migliorata"
+                ]
+            },
+            fabbro: {
+                comuni: ["Affilatura", "Rinforzo", "Riparazione"],
+                "non-comuni": ["Affilatura II", "Rinforzo II", "Riparazione II"],
+                rare: ["Affilatura III", "Rinforzo III", "Riparazione III"],
+                leggendarie: ["Forgiatura", "Rinforzo IV", "Riparazione IV"]
+            },
+            sarto: {
+                comuni: ["Schermatura", "Rinforzo", "Riparazione"],
+                "non-comuni": ["Schermatura II", "Rinforzo II", "Riparazione II"],
+                rare: ["Schermatura III", "Rinforzo III", "Riparazione III"],
+                leggendarie: ["Resistente", "Ispessimento", "Riparazione IV"]
+            },
+            carpenteria: {
+                comuni: ["Levigatura", "Rinforzo", "Riparazione"],
+                "non-comuni": ["Levigatura II", "Rinforzo II", "Riparazione II"],
+                rare: ["Levigatura III", "Rinforzo III", "Riparazione III"],
+                leggendarie: ["Potenza", "Rinforzo IV", "Riparazione IV"]
+            },
+            lapidario: {
+                comuni: ["Sagomatura", "Levigatura"],
+                "non-comuni": ["Sagomatura II", "Levigatura II"],
+                rare: ["Sagomatura III", "Levigatura III"],
+                leggendarie: ["Sagomatura IV", "Levigatura IV"]
+            }
+        };
+
+        let userAbilities = {};         
+        let userAbilitiesSaved = {};    
+        let allAbilitiesList = [];
+        let abilitaPrerequisitiMap = {}; 
+        let initialPe = 0;
+        let totalPePool = 0; 
+        let isMaster = false;
+        let schedaSalvataInDb = false;
+        let currentUserId = null;
+        let targetUserIdMaster = null; 
+        let editModeActive = false;
+        let userMagieSelezionate = {};
+
+        function getActiveUserId() {
+            return (isMaster && targetUserIdMaster) ? targetUserIdMaster : currentUserId;
+        }
+
+        const abilitaRipetibili = ["Robustezza", "Forza di Volontà", "Potenza Magica", "Sapienza Magica"];
+
+        window.switchTab = function(paneId, btnElement) {
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.remove('active-pane');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            const targetPane = document.getElementById(paneId);
+            if (targetPane) {
+                targetPane.classList.add('active-pane');
+            }
+            if (btnElement) {
+                btnElement.classList.add('active');
+            }
+        };
+
+        window.signUp = async function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const { error } = await supabaseClient.auth.signUp({ email, password });
+            if (error) {
+                mostraPopup("Errore di Registrazione", error.message);
+            } else {
+                mostraPopup("Registrazione Effettuata", "Ti è stata inviata una mail contenente il link per confermare il tuo indirizzo di posta elettronica. Cliccaci sopra per confermare la tua registrazione, quindi effettua l'accesso con nome utente e password da te scelti.");
+            }
+        };
+
+        window.signIn = async function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) mostraPopup("Errore di Accesso", error.message);
+            else checkSession();
+        };
+
+        window.passwordDimenticata = async function() {
+            const email = document.getElementById('email').value;
+            if (!email) {
+                mostraPopup("Attenzione", "Inserisci prima la tua email nel campo apposito.");
+                return;
+            }
+
+            let conferma = confirm("Stai chiedendo il reset della password. Clicca su ok se sei sicuro o su annulla se vuoi terminare l'operazione.");
+            if (!conferma) return;
+
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.href,
+            });
+            
+            if (error) {
+                mostraPopup("Errore", error.message);
+            } else {
+                mostraPopup("Email Inviata", "Controlla la tua casella di posta elettronica e segui le istruzioni contenute nel messaggio.");
+            }
+        };
+
+        window.signOut = async function() {
+            await supabaseClient.auth.signOut();
+            targetUserIdMaster = null;
+            checkSession();
+        };
+
+        async function checkSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const authSection = document.getElementById('auth-section');
+            const profileSection = document.getElementById('profile-section');
+            const masterDashboard = document.getElementById('master-dashboard');
+            const loginInstructions = document.getElementById('login-instructions');
+            const instructionsSidebar = document.getElementById('instructions-sidebar');
+            const actionsSidebar = document.getElementById('actions-sidebar');
+
+            if (session) {
+                authSection.style.display = 'none';
+                if (loginInstructions) loginInstructions.style.display = 'none';
+                if (instructionsSidebar) instructionsSidebar.style.display = 'block';
+                if (actionsSidebar) actionsSidebar.style.display = 'block';
+
+                currentUserId = session.user.id;
+
+                const { data: roleData, error: roleError } = await supabaseClient
+                    .from('user_roles')
+                    .select('role')
+                    .eq('user_id', currentUserId)
+                    .maybeSingle();
+
+                if (roleError) {
+                    console.warn("Avviso recupero ruolo:", roleError.message);
+                }
+
+                isMaster = roleData && (roleData.role === 'master' || roleData.role === 'admin');
+
+                if (isMaster && !targetUserIdMaster) {
+                    profileSection.style.display = 'none';
+                    masterDashboard.style.display = 'block';
+                    if (actionsSidebar) actionsSidebar.style.display = 'none';
+                    await caricaListaSchedeMaster();
+                } else {
+                    masterDashboard.style.display = 'none';
+                    profileSection.style.display = 'block';
+                    if (actionsSidebar) actionsSidebar.style.display = 'block';
+                    
+                    let idDaCaricare = targetUserIdMaster ? targetUserIdMaster : session.user.id;
+                    
+                    if (isMaster) {
+                        document.getElementById('btn-torna-master').style.display = 'block';
+                    }
+
+                    await caricaDatiScheda(idDaCaricare);
+                }
+            } else {
+                authSection.style.display = 'block';
+                if (loginInstructions) loginInstructions.style.display = 'block';
+                if (instructionsSidebar) instructionsSidebar.style.display = 'none';
+                if (actionsSidebar) actionsSidebar.style.display = 'none';
+
+                profileSection.style.display = 'none';
+                masterDashboard.style.display = 'none';
+                currentUserId = null;
+                targetUserIdMaster = null;
+                isMaster = false;
+            }
+        }
+
+        async function caricaListaSchedeMaster() {
+            const container = document.getElementById('master-lista-schede');
+            container.innerHTML = '<p style="color: var(--text-faded); font-style: italic;">Caricamento schede in corso...</p>';
+
+            const { data: personaggi, error } = await supabaseClient
+                .from('personaggi')
+                .select('*');
+
+            if (error || !personaggi) {
+                container.innerHTML = '<p class="error">Impossibile caricare l\'elenco delle schede.</p>';
+                return;
+            }
+
+            if (personaggi.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-faded);">Nessuna scheda registrata.</p>';
+                return;
+            }
+
+            let html = '';
+            personaggi.forEach(p => {
+                let nomePg = p.nome_personaggio || 'Senza Nome';
+                let nomeGioc = p.nome_giocatore || 'Giocatore non specificato';
+                let emailUtente = p.email || p.user_id;
+
+                html += `
+                    <div class="master-card-item">
+                        <div class="master-card-info">
+                            <h4>${nomePg} (${nomeGioc})</h4>
+                            <p style="color: var(--border-accent); font-size: 0.8rem;">Account: ${emailUtente}</p>
+                            <p>PE: ${p.punti_esperienza || 0} | PC: ${p.punti_creazione || 0} | Salvata: ${p.scheda_salvata ? 'Sì' : 'No'}</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end;">
+                            <button class="portal-btn alt" style="margin-top:0; padding: 0.4rem 0.8rem;" onclick="apriSchedaMaster('${p.user_id}')">Apri/Modifica</button>
+                            <button class="portal-btn alt" style="margin-top:0; padding: 0.4rem 0.8rem;" onclick="accreditaPEUtenteSingolo('${p.user_id}')">+PE</button>
+                            <button class="portal-btn danger" style="margin-top:0; padding: 0.4rem 0.8rem;" onclick="resetTotaleSchedaMaster('${p.user_id}', '${nomePg}')">Azzera</button>
+                            <button class="portal-btn danger" style="margin-top:0; padding: 0.4rem 0.8rem;" onclick="cancellaSchedaMaster('${p.user_id}', '${nomePg}')">Cancella</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        window.apriSchedaMaster = function(userId) {
+            targetUserIdMaster = userId;
+            checkSession();
+        };
+
+        window.tornaAllaDashboardMaster = function() {
+            targetUserIdMaster = null;
+            checkSession();
+        };
+
+        window.accreditaPEUtenteSingolo = async function(userId) {
+            let quanti = prompt("Quanti Punti Esperienza vuoi accreditare a questo utente?", "1");
+            if (quanti === null || isNaN(quanti)) return;
+            let val = parseInt(quanti);
+
+            const { data: pers } = await supabaseClient.from('personaggi').select('punti_esperienza').eq('user_id', userId).maybeSingle();
+            let peAttuali = pers ? (pers.punti_esperienza || 0) : 0;
+
+            await supabaseClient.from('personaggi').update({ punti_esperienza: peAttuali + val }).eq('user_id', userId);
+            mostraPopup("Successo", "PE accreditati con successo!");
+            caricaListaSchedeMaster();
+        };
+
+        window.resetTotaleSchedaMaster = async function(userId, nomePg) {
+            if (!confirm(`ATTENZIONE: Stai per resettare completamente la scheda del personaggio "${nomePg}" alla fase di creazione. Vuoi procedere?`)) {
+                return;
+            }
+
+            let passwordMaster = prompt("Inserisci la tua password da Master per confermare l'azzeramento definitivo:");
+            if (!passwordMaster) return;
+
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const { error: authError } = await supabaseClient.auth.signInWithPassword({
+                email: session.user.email,
+                password: passwordMaster
+            });
+
+            if (authError) {
+                mostraPopup("Errore", "Password non corretta. Operazione annullata.");
+                return;
+            }
+
+            const { data: datiCorrenti } = await supabaseClient.from('personaggi').select('*').eq('user_id', userId).maybeSingle();
+            const { data: abilitaCorrenti } = await supabaseClient.from('personaggio_abilita').select('*').eq('user_id', userId);
+
+            if (datiCorrenti) {
+                await supabaseClient.from('schede_backup').insert([{
+                    user_id: userId,
+                    nome_giocatore: datiCorrenti.nome_giocatore,
+                    nome_personaggio: datiCorrenti.nome_personaggio,
+                    dati_completi: datiCorrenti,
+                    abilita_salvate: abilitaCorrenti || [],
+                    tipo_operazione: 'AZZERAMENTO'
+                }]);
+            }
+
+            await supabaseClient.from('personaggio_abilita').delete().eq('user_id', userId);
+
+            const datiReset = {
+                nome_giocatore: null, nome_personaggio: null, religione: null, eta: null,
+                provenienza_regione: null, provenienza_libera: null, inventario: null,
+                diario: null, background: null, punti_creazione: 25, punti_esperienza: 0,
+                punti_ferita: 3, cartellini_volonta: 0, scheda_salvata: false,
+                magie_selezionate: {}
+            };
+
+            await supabaseClient.from('personaggi').update(datiReset).eq('user_id', userId);
+
+            if (targetUserIdMaster === userId) {
+                userMagieSelezionate = {};
+            }
+
+            mostraPopup("Scheda Azzerata", "Scheda azzerata con successo! È stata creata una copia di backup.");
+            caricaListaSchedeMaster();
+    
+            if (targetUserIdMaster === userId) {
+                await caricaDatiScheda(userId);
+            }
+        };
+        
+        window.cancellaSchedaMaster = async function(userId, nomePg) {
+            if (!confirm(`ATTENZIONE CRITICA: Stai per ELIMINARE DEFINITIVAMENTE la scheda del personaggio "${nomePg}" dal database. Vuoi procedere?`)) {
+                return;
+            }
+
+            let passwordMaster = prompt("Inserisci la tua password da Master per confermare la cancellazione definitiva della scheda:");
+            if (!passwordMaster) return;
+
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const { error: authError } = await supabaseClient.auth.signInWithPassword({
+                email: session.user.email,
+                password: passwordMaster
+            });
+
+            if (authError) {
+                mostraPopup("Errore", "Password non corretta. Operazione di cancellazione annullata.");
+                return;
+            }
+
+            const { data: datiCorrenti } = await supabaseClient.from('personaggi').select('*').eq('user_id', userId).maybeSingle();
+            const { data: abilitaCorrenti } = await supabaseClient.from('personaggio_abilita').select('*').eq('user_id', userId);
+
+            if (datiCorrenti) {
+                await supabaseClient.from('schede_backup').insert([{
+                    user_id: userId,
+                    nome_giocatore: datiCorrenti.nome_giocatore,
+                    nome_personaggio: datiCorrenti.nome_personaggio,
+                    dati_completi: datiCorrenti,
+                    abilita_salvate: abilitaCorrenti || [],
+                    tipo_operazione: 'CANCELLAZIONE'
+                }]);
+            }
+
+            await supabaseClient.from('personaggio_abilita').delete().eq('user_id', userId);
+            const { error: deleteError } = await supabaseClient.from('personaggi').delete().eq('user_id', userId);
+
+            if (deleteError) {
+                mostraPopup("Errore", "Errore durante la cancellazione della scheda: " + deleteError.message);
+                return;
+            }
+
+            mostraPopup("Scheda Eliminata", "Scheda cancellata con successo! È stata salvata una copia di sicurezza su Supabase.");
+            caricaListaSchedeMaster();
+        };
+
+        window.creaNuovaSchedaMaster = async function() {
+            let emailFittizia = prompt("Inserisci l'email fittizia per creare l'utente non registrato (es. nomegiocatore@absidia.temp):");
+            if (!emailFittizia || !emailFittizia.trim()) return;
+            emailFittizia = emailFittizia.trim();
+
+            let passwordFittizia = "AbsidiaTemp2026!"; 
+
+            const { data: authData, error: authError } = await supabaseClient.auth.signUp({ 
+                email: emailFittizia, 
+                password: passwordFittizia 
+            });
+
+            if (authError) {
+                mostraPopup("Errore", "Errore nella creazione dell'utente auth: " + authError.message);
+                return;
+            }
+
+            let nuovoUserId = authData.user ? authData.user.id : (authData.session ? authData.session.user.id : null);
+            
+            if (!nuovoUserId) {
+                mostraPopup("Errore", "Impossibile ricavare l'ID utente creato. Riprova.");
+                return;
+            }
+
+            const { error: insertError } = await supabaseClient.from('personaggi').insert([{
+                user_id: nuovoUserId,
+                email: emailFittizia,
+                punti_creazione: 25,
+                punti_esperienza: 0,
+                punti_ferita: 3,
+                cartellini_volonta: 0,
+                scheda_salvata: false,
+                magie_selezionate: {}
+            }]);
+
+            if (insertError) {
+                mostraPopup("Errore", "Utente auth creato ma errore nell'inserimento della tabella personaggi: " + insertError.message);
+                return;
+            }
+
+            mostraPopup("Scheda Creata", "Nuovo utente e scheda ex novo creati con successo! Ora puoi aprirla e compilarla.");
+            caricaListaSchedeMaster();
+        };
+
+        window.accreditaPezziGlobali = async function(val) {
+            if (!confirm(`Confermi l'accredito di ${val} PE a tutte le schede registrate?`)) return;
+            
+            const { data: personaggi } = await supabaseClient.from('personaggi').select('user_id, punti_esperienza');
+            if (!personaggi) return;
+
+            for (let p of personaggi) {
+                let nuovoPe = (p.punti_esperienza || 0) + val;
+                await supabaseClient.from('personaggi').update({ punti_esperienza: nuovoPe }).eq('user_id', p.user_id);
+            }
+            mostraPopup("Successo", "PE accreditati a tutti i giocatori con successo!");
+            caricaListaSchedeMaster();
+        };
+
+        async function caricaDatiScheda(userId) {
+            let { data: personaggio, error } = await supabaseClient
+                .from('personaggi')
+                .select('*')
+                .eq('user_id', userId)
+                .maybeSingle();
+
+            if (!personaggio) {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                const sessionEmail = session ? session.user.email : null;
+
+                const { data: nuovoPezzo } = await supabaseClient
+                    .from('personaggi')
+                    .upsert([{ 
+                        user_id: userId,
+                        email: sessionEmail,
+                        punti_creazione: 25, 
+                        punti_esperienza: 0, 
+                        punti_ferita: 3, 
+                        cartellini_volonta: 0, 
+                        scheda_salvata: false,
+                        magie_selezionate: {}
+                    }], { onConflict: 'user_id' })
+                    .select()
+                    .maybeSingle();
+                personaggio = nuovoPezzo;
+            }
+
+            userMagieSelezionate = (personaggio && personaggio.magie_selezionate) ? personaggio.magie_selezionate : {};
+
+            schedaSalvataInDb = personaggio ? personaggio.scheda_salvata : false;
+            editModeActive = isMaster ? true : false;
+
+            document.getElementById('gen-giocatore').value = personaggio?.nome_giocatore || '';
+            document.getElementById('user-email').value = personaggio?.email || personaggio?.user_id || '';
+            document.getElementById('gen-personaggio').value = personaggio?.nome_personaggio || '';
+            document.getElementById('gen-religione').value = personaggio?.religione || '';
+            document.getElementById('gen-eta').value = personaggio?.eta || '';
+            document.getElementById('gen-provenienza-regione').value = personaggio?.provenienza_regione || '';
+            document.getElementById('gen-provenienza-libera').value = personaggio?.provenienza_libera || '';
+            
+            initialPe = personaggio?.punti_esperienza ?? 0;
+            document.getElementById('gen-pe').value = initialPe;
+
+            document.getElementById('txt-inventario').value = personaggio?.inventario || '';
+            document.getElementById('txt-diario').value = personaggio?.diario || '';
+            document.getElementById('txt-background').value = personaggio?.background || '';
+
+            if (isMaster) {
+                bloccaTuttiCampi(false);
+                document.getElementById('btn-salva').disabled = false;
+                document.getElementById('btn-crea').disabled = true;
+                document.getElementById('btn-aggiorna').disabled = true;
+            } else {
+                bloccaTuttiCampi(true);
+                const btnCrea = document.getElementById('btn-crea');
+                const btnAggiorna = document.getElementById('btn-aggiorna');
+                const btnSalva = document.getElementById('btn-salva');
+                btnSalva.disabled = true;
+
+                if (!schedaSalvataInDb) {
+                    btnCrea.disabled = false;
+                    btnAggiorna.disabled = true;
+                } else {
+                    btnCrea.disabled = true;
+                    btnAggiorna.disabled = false;
+                }
+            }
+
+            await caricaAbilita(userId);
+        }
+
+        function bloccaTuttiCampi(bloccato) {
+            const campi = document.querySelectorAll('#profile-section input:not(#user-email):not(#gen-pf):not(#gen-volonta):not(#gen-cm-comuni):not(#gen-cm-non-comuni):not(#gen-cm-rari):not(#gen-cm-leggendari), #profile-section select, #profile-section textarea');
+            campi.forEach(el => el.disabled = bloccato);
+            
+            if (!isMaster) {
+                document.getElementById('gen-razza').disabled = true;
+                document.getElementById('gen-pe').disabled = true;
+                document.getElementById('gen-pc').disabled = true;
+            }
+
+            const bottoniAbilita = document.querySelectorAll('.ability-controls button');
+            bottoniAbilita.forEach(btn => btn.disabled = bloccato);
+        }
+
+        window.abilitaCreazioneScheda = function() {
+            if (schedaSalvataInDb) return;
+            editModeActive = true;
+            bloccaTuttiCampi(false);
+            document.getElementById('user-email').disabled = true;
+            
+            if (!isMaster) {
+                document.getElementById('gen-razza').disabled = true;
+                document.getElementById('gen-pe').disabled = true;
+                document.getElementById('gen-pc').disabled = true;
+            }
+
+            document.getElementById('btn-salva').disabled = false;
+            document.getElementById('btn-crea').disabled = true;
+        };
+
+        window.abilitaAggiornamentoScheda = function() {
+            editModeActive = true;
+            bloccaTuttiCampi(true);
+            document.getElementById('gen-religione').disabled = false;
+            document.getElementById('txt-inventario').disabled = false;
+            document.getElementById('txt-diario').disabled = false;
+            document.getElementById('txt-background').disabled = false;
+            
+            if (!isMaster) {
+                document.getElementById('gen-razza').disabled = true;
+                document.getElementById('gen-pe').disabled = true;
+                document.getElementById('gen-pc').disabled = true;
+            }
+            
+            const bottoniAbilita = document.querySelectorAll('.ability-controls button');
+            bottoniAbilita.forEach(btn => {
+                if (btn.innerText === '+') {
+                    btn.disabled = false;
+                } else if (btn.innerText === '-') {
+                    btn.disabled = true; 
+                }
+            });
+
+            ricalcolaStatisticheDerivate();
+
+            document.getElementById('btn-salva').disabled = false;
+            document.getElementById('btn-aggiorna').disabled = true;
+        };
+
+        async function caricaAbilita(userId) {
+            const { data: abilities } = await supabaseClient.from('abilities').select('*');
+            allAbilitiesList = abilities || [];
+
+            const { data: prereqs } = await supabaseClient.from('abilita_prerequisiti').select('*');
+            abilitaPrerequisitiMap = {};
+            if (prereqs) {
+                prereqs.forEach(p => {
+                    if (!abilitaPrerequisitiMap[p.abilita_id]) abilitaPrerequisitiMap[p.abilita_id] = [];
+                    abilitaPrerequisitiMap[p.abilita_id].push(p);
+                });
+            }
+
+            userAbilities = {};
+            userAbilitiesSaved = {};
+            
+            const { data: charAbilities } = await supabaseClient
+                .from('personaggio_abilita')
+                .select('*')
+                .eq('user_id', userId);
+
+            if (charAbilities) {
+                charAbilities.forEach(ca => {
+                    userAbilities[ca.abilita_id] = ca.livello;
+                    userAbilitiesSaved[ca.abilita_id] = ca.livello; 
+                });
+            }
+
+            let costoAbilitaSalvate = Object.values(userAbilitiesSaved).reduce((a, b) => a + b, 0) * 5;
+            let pcTrattenutiDaSalvate = Math.min(costoAbilitaSalvate, 25);
+            let peTrattenutiDaSalvate = Math.max(0, costoAbilitaSalvate - pcTrattenutiDaSalvate);
+            totalPePool = initialPe + peTrattenutiDaSalvate;
+
+            ricalcolaRisorseEAbilita();
+            renderAbilitaUI();
+            ricalcolaStatisticheDerivate();
+        }
+
+        function ricalcolaRisorseEAbilita() {
+            let totaleLivelli = Object.values(userAbilities).reduce((a, b) => a + b, 0);
+            let costoTotaleSpeso = totaleLivelli * 5;
+            
+            let pcDisponibili = 25;
+            let peDisponibili = totalPePool; 
+            let costoRimanente = costoTotaleSpeso;
+
+            let pcUsati = Math.min(costoRimanente, pcDisponibili);
+            pcDisponibili -= pcUsati;
+            costoRimanente -= pcUsati;
+
+            let peUsati = 0;
+            if (costoRimanente > 0) {
+                peUsati = Math.min(costoRimanente, peDisponibili);
+                peDisponibili -= peUsati;
+                costoRimanente -= peUsati;
+            }
+
+            if (costoRimanente > 0) return false; 
+
+            let finalPc = Math.max(0, pcDisponibili);
+            let finalPe = Math.max(0, peDisponibili);
+
+            document.getElementById('gen-pc').value = finalPc;
+            document.getElementById('gen-pe').value = finalPe;
+
+            const abilitaPcElem = document.getElementById('abilita-pc-disp');
+            const abilitaPeElem = document.getElementById('abilita-pe-disp');
+            if (abilitaPcElem) abilitaPcElem.innerText = finalPc;
+            if (abilitaPeElem) abilitaPeElem.innerText = finalPe;
+
+            return true;
+        }
+
+        function ricalcolaStatisticheDerivate() {
+            const getAbLvl = (nome) => {
+                let ab = allAbilitiesList.find(a => a.name.toUpperCase() === nome.toUpperCase());
+                return ab ? (userAbilities[ab.id] || 0) : 0;
+            };
+
+            let livRobustezza = getAbLvl('ROBUSTEZZA');
+            let livVolonta = getAbLvl('FORZA DI VOLONTÀ') || getAbLvl('FORZA DI VOLONTA');
+            let livGuardiaDivina = getAbLvl('GUARDIA DIVINA');
+            let livMagiaArcana = getAbLvl('MAGIA ARCANA');
+            let livStregoneria = getAbLvl('STREGONERIA');
+            let livMagiaDruidica = getAbLvl('MAGIA DRUIDICA');
+            let livGuardianoNatura = getAbLvl('GUARDIANO DELLA NATURA');
+            let livMagiaMistica = getAbLvl('MAGIA MISTICA');
+            let livMagiaDivina = getAbLvl('MAGIA DIVINA');
+            let livPotenzaMagica = getAbLvl('POTENZA MAGICA');
+            let livSapienzaMagica = getAbLvl('SAPIENZA MAGICA');
+            
+            let livFattucchiere = getAbLvl('FATTUCCHIERE');
+            let livFabbro = getAbLvl('FABBRO');
+            let livSarto = getAbLvl('SARTORIA') || getAbLvl('SARTO');
+            let livCarpenteria = getAbLvl('CARPENTERIA');
+            let livLapidario = getAbLvl('LAPIDARIO');
+            let livAlchimia = getAbLvl('ALCHIMIA');
+
+            let bonusPf = 0;
+            for (let i = 1; i <= livRobustezza; i++) {
+                let ciclo = ((i - 1) % 4) + 1;
+                if (ciclo === 1) bonusPf += 1;
+                else if (ciclo === 2 || ciclo === 3) bonusPf += 2;
+                else if (ciclo === 4) bonusPf += 5;
+            }
+            if (livGuardiaDivina >= 1) bonusPf += 1;
+            if (livStregoneria >= 1) bonusPf += 2;
+            if (livMagiaDruidica >= 1) bonusPf += 1;
+            if (livGuardianoNatura >= 1) bonusPf += 1;
+
+            document.getElementById('gen-pf').value = 3 + bonusPf;
+            document.getElementById('gen-volonta').value = livVolonta;
+
+            let cmComuni = 0, cmNonComuni = 0, cmRari = 0, cmLeggendari = 0;
+            let slotMiracoli = { comuni: 0, nonComuni: 0, rari: 0, leggendari: 0 };
+            let slotIncantesimi = { comuni: 0, nonComuni: 0, rari: 0, leggendari: 0 };
+            let slotEvocazioni = { comuni: 0, nonComuni: 0, rari: 0, leggendari: 0 };
+            let slotCanalizzazioni = { comuni: 0, nonComuni: 0, rari: 0, leggendari: 0 };
+            let slotFattucchiere = { comuni: 0, nonComuni: 0, rari: 0, leggendari: 0 };
+            let slotAlchimia = { comuni: 0, nonComuni: 0, rari: 0, leggendari: 0 };
+            let slotFabbro = { comuni: 0, nonComuni: 0, rari: 0, leggendari: 0 };
+            let slotSarto = { comuni: 0, nonComuni: 0, rari: 0, leggendari: 0 };
+            let slotCarpenteria = { comuni: 0, nonComuni: 0, rari: 0, leggendari: 0 };
+            let slotLapidario = { comuni: 0, nonComuni: 0, rari: 0, leggendari: 0 };
+
+            if (livGuardiaDivina >= 1) { cmComuni += 1; slotMiracoli.comuni += 2; }
+            if (livGuardiaDivina >= 2) { cmComuni += 1; cmNonComuni += 1; slotMiracoli.comuni += 1; slotMiracoli.nonComuni += 2; }
+            if (livGuardiaDivina >= 3) { cmComuni += 1; cmNonComuni += 1; cmRari += 1; slotMiracoli.comuni += 1; slotMiracoli.nonComuni += 1; slotMiracoli.rari += 2; }
+            if (livGuardiaDivina >= 4) { cmComuni += 1; cmNonComuni += 1; cmRari += 1; cmLeggendari += 1; slotMiracoli.comuni += 2; slotMiracoli.nonComuni += 1; slotMiracoli.rari += 1; slotMiracoli.leggendari += 1; }
+
+            if (livMagiaArcana >= 1) { cmComuni += 2; slotIncantesimi.comuni += 4; }
+            if (livMagiaArcana >= 2) { cmComuni += 1; cmNonComuni += 2; slotIncantesimi.comuni += 2; slotIncantesimi.nonComuni += 4; }
+            if (livMagiaArcana >= 3) { cmComuni += 1; cmNonComuni += 1; cmRari += 1; slotIncantesimi.comuni += 2; slotIncantesimi.nonComuni += 2; slotIncantesimi.rari += 2; }
+            if (livMagiaArcana >= 4) { cmComuni += 1; cmNonComuni += 1; cmRari += 1; cmLeggendari += 1; slotIncantesimi.comuni += 2; slotIncantesimi.nonComuni += 2; slotIncantesimi.rari += 2; slotIncantesimi.leggendari += 2; }
+
+            if (livStregoneria >= 1) { cmComuni += 3; slotIncantesimi.comuni += 1; }
+            if (livStregoneria >= 2) { cmComuni += 2; cmNonComuni += 3; slotIncantesimi.comuni += 1; slotIncantesimi.nonComuni += 1; }
+            if (livStregoneria >= 3) { cmComuni += 2; cmNonComuni += 2; slotIncantesimi.comuni += 1; slotIncantesimi.nonComuni += 1; slotIncantesimi.rari += 1; }
+            if (livStregoneria >= 4) { cmComuni += 2; cmNonComuni += 2; cmRari += 2; slotIncantesimi.comuni += 1; slotIncantesimi.nonComuni += 1; slotIncantesimi.rari += 1; slotIncantesimi.leggendari += 1; }
+
+            if (livMagiaDruidica >= 1) { cmComuni += 2; slotEvocazioni.comuni += 3; }
+            if (livMagiaDruidica >= 2) { cmComuni += 2; cmNonComuni += 2; slotEvocazioni.comuni += 2; slotEvocazioni.nonComuni += 3; }
+            if (livMagiaDruidica >= 3) { cmComuni += 1; cmNonComuni += 1; cmRari += 2; slotEvocazioni.comuni += 2; slotEvocazioni.nonComuni += 2; slotEvocazioni.rari += 3; }
+            if (livMagiaDruidica >= 4) { cmComuni += 2; cmNonComuni += 2; cmRari += 1; cmLeggendari += 1; slotEvocazioni.comuni += 2; slotEvocazioni.rari += 2; slotEvocazioni.leggendari += 2; }
+
+            if (livGuardianoNatura >= 1) { cmComuni += 1; slotEvocazioni.comuni += 2; }
+            if (livGuardianoNatura >= 2) { cmComuni += 1; cmNonComuni += 1; slotEvocazioni.comuni += 1; slotEvocazioni.nonComuni += 2; }
+            if (livGuardianoNatura >= 3) { cmComuni += 1; cmNonComuni += 1; cmRari += 1; slotEvocazioni.comuni += 1; slotEvocazioni.nonComuni += 1; slotEvocazioni.rari += 2; }
+            if (livGuardianoNatura >= 4) { cmComuni += 1; cmNonComuni += 1; cmRari += 1; cmLeggendari += 1; slotEvocazioni.comuni += 1; slotEvocazioni.nonComuni += 1; slotEvocazioni.rari += 1; slotEvocazioni.leggendari += 1; }
+
+            if (livMagiaMistica >= 1) { cmComuni += 2; slotCanalizzazioni.comuni += 1; }
+            if (livMagiaMistica >= 2) { cmNonComuni += 1; slotCanalizzazioni.comuni += 1; slotCanalizzazioni.nonComuni += 1; }
+            if (livMagiaMistica >= 3) { cmComuni += 1; cmNonComuni += 1; cmRari += 1; slotCanalizzazioni.comuni += 1; slotCanalizzazioni.nonComuni += 1; slotCanalizzazioni.rari += 1; }
+            if (livMagiaMistica >= 4) { 
+                cmComuni += 1; cmNonComuni += 1; cmRari += 1; cmLeggendari += 1; 
+                slotCanalizzazioni.comuni += 1; slotCanalizzazioni.nonComuni += 1; slotCanalizzazioni.rari += 1; slotCanalizzazioni.leggendari += 1; 
+            }
+	    
+            if (livMagiaDivina >= 1) { cmComuni += 2; slotMiracoli.comuni += 3; }
+            if (livMagiaDivina >= 2) { cmComuni += 2; cmNonComuni += 2; slotMiracoli.comuni += 2; slotMiracoli.nonComuni += 3; }
+            if (livMagiaDivina >= 3) { cmComuni += 1; cmNonComuni += 1; cmRari += 2; slotMiracoli.comuni += 2; slotMiracoli.nonComuni += 2; slotMiracoli.rari += 3; }
+            if (livMagiaDivina >= 4) { 
+                cmComuni += 2; cmNonComuni += 2; cmRari += 1; cmLeggendari += 1; 
+                slotMiracoli.comuni += 2; slotMiracoli.nonComuni += 2; slotMiracoli.rari += 2; slotMiracoli.leggendari += 2;
+	    }
+
+            if (livFattucchiere >= 1) slotFattucchiere.comuni += 2;
+            if (livFattucchiere >= 2) { slotFattucchiere.comuni += 1; slotFattucchiere.nonComuni += 2; }
+            if (livFattucchiere >= 3) { slotFattucchiere.comuni += 1; slotFattucchiere.nonComuni += 1; slotFattucchiere.rari += 2; }
+            if (livFattucchiere >= 4) { slotFattucchiere.comuni += 1; slotFattucchiere.nonComuni += 1; slotFattucchiere.rari += 1; slotFattucchiere.leggendari += 2; }
+
+            if (livFabbro >= 1) slotFabbro.comuni += 2;
+            if (livFabbro >= 2) slotFabbro.nonComuni += 2;
+            if (livFabbro >= 3) slotFabbro.rari += 2;
+            if (livFabbro >= 4) slotFabbro.leggendari += 2;
+
+            if (livSarto >= 1) slotSarto.comuni += 2;
+            if (livSarto >= 2) slotSarto.nonComuni += 2;
+            if (livSarto >= 3) slotSarto.rari += 2;
+            if (livSarto >= 4) slotSarto.leggendari += 2;
+
+            if (livCarpenteria >= 1) slotCarpenteria.comuni += 2;
+            if (livCarpenteria >= 2) slotCarpenteria.nonComuni += 2;
+            if (livCarpenteria >= 3) slotCarpenteria.rari += 2;
+            if (livCarpenteria >= 4) slotCarpenteria.leggendari += 2;
+
+            if (livLapidario >= 1) slotLapidario.comuni += 1;
+            if (livLapidario >= 2) slotLapidario.nonComuni += 1;
+            if (livLapidario >= 3) slotLapidario.rari += 1;
+            if (livLapidario >= 4) slotLapidario.leggendari += 1;
+
+            if (livAlchimia >= 1) slotAlchimia.comuni += 2;
+            if (livAlchimia >= 2) { slotAlchimia.comuni += 1; slotAlchimia.nonComuni += 2; }
+            if (livAlchimia >= 3) { slotAlchimia.comuni += 1; slotAlchimia.nonComuni += 1; slotAlchimia.rari += 2; }
+            if (livAlchimia >= 4) { slotAlchimia.comuni += 1; slotAlchimia.nonComuni += 1; slotAlchimia.rari += 1; slotAlchimia.leggendari += 2; }
+
+            for (let i = 1; i <= livPotenzaMagica; i++) {
+                let ciclo = ((i - 1) % 4) + 1;
+                if (ciclo === 1) cmComuni += 1;
+                else if (ciclo === 2) { cmComuni += 1; cmNonComuni += 1; }
+                else if (ciclo === 3) { cmComuni += 1; cmNonComuni += 1; cmRari += 1; }
+                else if (ciclo === 4) { cmComuni += 1; cmNonComuni += 1; cmRari += 1; cmLeggendari += 1; }
+            }
+
+            for (let i = 1; i <= livSapienzaMagica; i++) {
+                let ciclo = ((i - 1) % 4) + 1;
+                let targetSlot = null;
+                if (livMagiaArcana > 0 || livStregoneria > 0) targetSlot = slotIncantesimi;
+                else if (livMagiaDivina > 0 || livGuardiaDivina > 0) targetSlot = slotMiracoli;
+                else if (livMagiaDruidica > 0 || livGuardianoNatura > 0) targetSlot = slotEvocazioni;
+                else if (livMagiaMistica > 0) targetSlot = slotCanalizzazioni;
+
+                if (ciclo === 1) {
+                    cmComuni += 1;
+                    if (targetSlot) targetSlot.comuni += 1;
+                } else if (ciclo === 2) {
+                    cmComuni += 1; cmNonComuni += 1;
+                    if (targetSlot) { targetSlot.comuni += 1; targetSlot.nonComuni += 1; }
+                } else if (ciclo === 3) {
+                    cmComuni += 1; cmNonComuni += 1; cmRari += 1;
+                    if (targetSlot) { targetSlot.comuni += 1; targetSlot.nonComuni += 1; targetSlot.rari += 1; }
+                } else if (ciclo === 4) {
+                    cmComuni += 1; cmNonComuni += 1; cmRari += 1; cmLeggendari += 1;
+                    if (targetSlot) { targetSlot.comuni += 1; targetSlot.nonComuni += 1; targetSlot.rari += 1; targetSlot.leggendari += 1; }
+                }
+            }
+
+            document.getElementById('gen-cm-comuni').value = cmComuni;
+            document.getElementById('gen-cm-non-comuni').value = cmNonComuni;
+            document.getElementById('gen-cm-rari').value = cmRari;
+            document.getElementById('gen-cm-leggendari').value = cmLeggendari;
+
+            generaCampiMagieTabella('miracoli', slotMiracoli, 'miracoli');
+            generaCampiMagieTabella('magie', slotIncantesimi, 'magie');
+            generaCampiMagieTabella('evocazioni', slotEvocazioni, 'evocazioni');
+            generaCampiMagieTabella('canalizzazioni', slotCanalizzazioni, null);
+            generaCampiMagieTabella('ricette-fattucchiere', slotFattucchiere, null);
+            generaCampiMagieTabella('reazioni-alchimia', slotAlchimia, null);
+            generaCampiMagieTabella('lavorazioni-fabbro', slotFabbro, 'fabbro');
+            generaCampiMagieTabella('lavorazioni-sarto', slotSarto, 'sarto');
+            generaCampiMagieTabella('lavorazioni-carpenteria', slotCarpenteria, 'carpenteria');
+            generaCampiMagieTabella('lavorazioni-lapidario', slotLapidario, 'lapidario');
+        }
+
+        function prerequisitiSoddisfatti(ab) {
+            let abNameUpper = ab.name.toUpperCase();
+            
+            if (abNameUpper === "SAPIENZA MAGICA") {
+                const nomiPrerequisitiOR = [
+                    "MAGIA ARCANA", "MAGIA DIVINA", "MAGIA DRUIDICA", 
+                    "GUARDIA DIVINA", "STREGONERIA", "GUARDIANO DELLA NATURA", "MAGIA MISTICA"
+                ];
+                for (let nomePrereq of nomiPrerequisitiOR) {
+                    let idPrereq = allAbilitiesList.find(x => x.name.toUpperCase() === nomePrereq)?.id;
+                    if (idPrereq && (userAbilities[idPrereq] || 0) >= 1) return true;
+                }
+                return false;
+            }
+
+            if (abNameUpper === "GUARDIANO DELLA NATURA") {
+                let idArcieria = allAbilitiesList.find(x => x.name.toUpperCase() === "ARCIERIA")?.id;
+                let idMaestroLame = allAbilitiesList.find(x => x.name.toUpperCase() === "MAESTRO DI LAME" || x.name.toUpperCase() === "MAESTRO di LAME")?.id;
+                let idAffinitaNatura = allAbilitiesList.find(x => x.name.toUpperCase() === "AFFINITÀ CON LA NATURA" || x.name.toUpperCase() === "AFFINITA CON LA NATURA")?.id;
+                
+                let livArcieria = idArcieria ? (userAbilities[idArcieria] || 0) : 0;
+                let livMaestroLame = idMaestroLame ? (userAbilities[idMaestroLame] || 0) : 0;
+                let livAffinitaNatura = idAffinitaNatura ? (userAbilities[idAffinitaNatura] || 0) : 0;
+                
+                return (livAffinitaNatura >= 1 && (livArcieria >= 1 || livMaestroLame >= 1));
+            }
+
+            let prereqs = abilitaPrerequisitiMap[ab.id];
+            if (prereqs) {
+                for (let p of prereqs) {
+                    let livelloPosseduto = userAbilities[p.prerequisito_id] || 0;
+                    if (livelloPosseduto < p.livello_richiesto) return false;
+                }
+            }
+            return true;
+        }
+
+        function ottieniTestoPrerequisiti(ab) {
+            let abNameUpper = ab.name.toUpperCase();
+            if (abNameUpper === "SAPIENZA MAGICA") return "Prerequisito: Magia Arcana I, Magia Divina I, Magia Druidica I, Guardia Divina I, Stregoneria I, Guardiano della Natura I o Magia Mistica I";
+            if (abNameUpper === "GUARDIANO DELLA NATURA") return "Prerequisito: Affinità con la Natura I + (Arcieria I o Maestro di Lame I)";
+
+            let prereqs = abilitaPrerequisitiMap[ab.id];
+            if (!prereqs || prereqs.length === 0) return "Nessun prerequisito";
+
+            let descrizioni = [];
+            let tuttiSoddisfatti = true;
+            for (let p of prereqs) {
+                let abilitaReq = allAbilitiesList.find(x => x.id === p.prerequisito_id);
+                let nomeReq = abilitaReq ? abilitaReq.name : "Abilità sconosciuta";
+                let livelloPosseduto = userAbilities[p.prerequisito_id] || 0;
+                if (livelloPosseduto < p.livello_richiesto) tuttiSoddisfatti = false;
+                descrizioni.push(`${nomeReq} (Richiesto Liv. ${p.livello_richiesto})`);
+            }
+            return tuttiSoddisfatti ? "Prerequisiti soddisfatti" : "Prerequisiti: " + descrizioni.join(", ");
+        }
+
+        function renderAbilitaUI() {
+            const container = document.getElementById('abilita-container');
+            if (!allAbilitiesList.length) {
+                container.innerHTML = '<p style="color: var(--text-faded); font-style: italic;">Nessuna abilità trovata.</p>';
+                return;
+            }
+
+            let html = '<div class="abilities-grid">';
+            allAbilitiesList.forEach(ab => {
+                let currentLevel = userAbilities[ab.id] || 0;
+                let eRipetibile = abilitaRipetibili.map(r => r.toUpperCase()).includes(ab.name.toUpperCase());                
+                let testoLivello = `Liv. ${currentLevel}`;
+                if (eRipetibile && currentLevel > 4) {
+                    let livelloEffettivo = ((currentLevel - 1) % 4) + 1;
+                    testoLivello = `Liv. ${currentLevel} (Eff. ${livelloEffettivo})`;
+                } else if (!eRipetibile) {
+                    testoLivello += `/${ab.max_level || 4}`;
+                }
+
+                let disabledAttr = (!editModeActive && !isMaster) ? 'disabled' : '';
+                let statusClass = currentLevel > 0 ? 'active' : (prerequisitiSoddisfatti(ab) ? 'available' : 'inactive');
+
+                html += `
+                    <div class="ability-item ${statusClass}" onmouseenter="avviaTimerPopup(this, ${ab.id})" onmouseleave="chiudiPopup(this)">
+                        <div class="ability-info">
+                            <div class="ability-name">${ab.name} (<span id="lvl-${ab.id}">${testoLivello}</span>)</div>
+                        </div>
+                        <div class="ability-controls">
+                            <button onclick="modificaAbilita(${ab.id}, -1)" ${(!editModeActive && !isMaster) || (schedaSalvataInDb && !isMaster && currentLevel <= (userAbilitiesSaved[ab.id] || 0)) ? 'disabled' : ''}>-</button>
+                            <button onclick="modificaAbilita(${ab.id}, 1)" ${disabledAttr}>+</button>
+                        </div>
+                        <div class="ability-popup" id="popup-${ab.id}">${ottieniTestoPrerequisiti(ab)}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        let popupTimer = null;
+        window.avviaTimerPopup = function(elemento, abId) {
+            clearTimeout(popupTimer);
+            popupTimer = setTimeout(() => {
+                const popup = document.getElementById(`popup-${abId}`);
+                if (popup) popup.style.display = 'block';
+            }, 1000);
+        };
+
+        window.chiudiPopup = function(elemento) {
+            clearTimeout(popupTimer);
+            elemento.querySelectorAll('.ability-popup').forEach(p => p.style.display = 'none');
+        };
+
+        window.modificaAbilita = function(abilityId, delta) {
+            if (!editModeActive && !isMaster) return;
+
+            let ab = allAbilitiesList.find(x => x.id === abilityId);
+            if (!ab) return;
+
+            let currentLevel = userAbilities[abilityId] || 0;
+            let newLevel = currentLevel + delta;
+            let minLevel = isMaster ? 0 : (userAbilitiesSaved[abilityId] || 0); 
+            if (newLevel < minLevel || newLevel < 0) return;
+
+            let eRipetibile = abilitaRipetibili.map(r => r.toUpperCase()).includes(ab.name.toUpperCase());
+            if (!eRipetibile && delta > 0 && newLevel > (ab.max_level || 4)) return;
+
+            if (delta > 0) {
+                if (!isMaster && !prerequisitiSoddisfatti(ab)) {
+                    mostraPopup("Attenzione", `Non possiedi i prerequisiti per "${ab.name}".`);
+                    return;
+                }
+
+                if (newLevel === 4) {
+                    let altraAAlmenoTre = false;
+                    for (let otherId in userAbilities) {
+                        if (String(otherId) !== String(abilityId)) {
+                            if ((userAbilities[otherId] || 0) >= 3) {
+                                altraAAlmenoTre = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!isMaster && !altraAAlmenoTre) {
+                        mostraPopup("Attenzione", `Non puoi portare "${ab.name}" al livello 4 senza possedere almeno un'altra abilità a livello 3.`);
+                        return;
+                    }
+                }
+
+                let pcDisp = parseInt(document.getElementById('gen-pc').value) || 0;
+                let peDisp = parseInt(document.getElementById('gen-pe').value) || 0;
+                if (pcDisp === 0 && peDisp === 0) {
+                    mostraPopup("Risorse Esaurite", "Punti Creazione (PC) ed Esperienza (PE) esauriti.");
+                    return;
+                }
+            }
+
+            let vecchioLivello = userAbilities[abilityId] || 0;
+            userAbilities[abilityId] = newLevel;
+
+            if (!isMaster && !ricalcolaRisorseEAbilita()) {
+                userAbilities[abilityId] = vecchioLivello;
+                ricalcolaRisorseEAbilita();
+                mostraPopup("Punti Insufficienti", "Punti insufficienti per questa operazione!");
+                return;
+            }
+
+            renderAbilitaUI();
+            ricalcolaStatisticheDerivate();
+        };
+
+        function generaCampiMagieTabella(prefix, slots, catKey) {
+            const categorie = [
+                { cat: 'comuni', max: 20, count: slots.comuni },
+                { cat: 'non-comuni', max: 20, count: slots.nonComuni },
+                { cat: 'rare', max: 20, count: slots.rari },
+                { cat: 'leggendarie', max: 20, count: slots.leggendari }
+            ];
+
+            const listaMagieCatalogo = (catKey && cataloghiMagie[catKey]) ? cataloghiMagie[catKey] : null;
+
+            categorie.forEach(item => {
+                const container = document.getElementById(`${prefix}-${item.cat}`);
+                if (!container) return;
+                
+                const selectsEsistenti = container.querySelectorAll('select, input');
+                selectsEsistenti.forEach((el, idx) => {
+                    const chiaveValore = `${prefix}-${item.cat}-${idx}`;
+                    if (el.value) {
+                        userMagieSelezionate[chiaveValore] = el.value;
+                    }
+                });
+
+                let html = '';
+                let magieDisponibiliLivello = (listaMagieCatalogo && listaMagieCatalogo[item.cat]) ? listaMagieCatalogo[item.cat] : [];
+
+                for (let i = 1; i <= 20; i++) {
+                    const chiaveValore = `${prefix}-${item.cat}-${i - 1}`;
+                    let valoreSalvato = userMagieSelezionate[chiaveValore] || '';
+                    
+                    let slotDisponibile = i <= item.count;
+                    let giaValorizzato = valoreSalvato !== '';
+                    
+                    let isDisabledInput = false;
+                    if (!isMaster) {
+                        if (!editModeActive || !slotDisponibile || giaValorizzato) {
+                            isDisabledInput = true;
+                        }
+                    } else {
+                        if (!slotDisponibile) {
+                            isDisabledInput = true;
+                        }
+                    }
+                    
+                    let opacityStyle = slotDisponibile ? 'opacity: 1;' : 'opacity: 0.35;';
+
+                    if (magieDisponibiliLivello.length > 0) {
+                        html += `<select data-key="${chiaveValore}" onchange="userMagieSelezionate['${chiaveValore}']=this.value;" ${isDisabledInput ? 'disabled' : ''} style="font-size: 0.85rem; padding: 0.3rem; margin: 0.2rem 0; ${opacityStyle}">`;
+                        html += `<option value="">-- Seleziona (Slot ${i}) --</option>`;
+                        magieDisponibiliLivello.forEach(magia => {
+                            let selectedAttr = (valoreSalvato === magia) ? 'selected' : '';
+                            html += `<option value="${magia}" ${selectedAttr}>${magia}</option>`;
+                        });
+                        html += `</select>`;
+                    } else {
+                        let placeholderText = slotDisponibile ? `Slot ${i}` : `-`;
+                        html += `<input type="text" placeholder="${placeholderText}" value="${valoreSalvato}" oninput="userMagieSelezionate['${chiaveValore}']=this.value;" ${isDisabledInput ? 'disabled' : ''} style="font-size: 0.85rem; padding: 0.3rem; margin: 0.2rem 0; ${opacityStyle}">`;
+                    }
+                }
+                container.innerHTML = html;
+            });
+        }
+
+        window.salvaScheda = async function() {
+            let idSalvataggio = isMaster && targetUserIdMaster ? targetUserIdMaster : currentUserId;
+            if (!idSalvataggio) return;
+
+            document.querySelectorAll('#profile-section .magic-columns select, #profile-section .magic-columns input').forEach(el => {
+                let chiave = el.getAttribute('data-key');
+                if (chiave && el.value) {
+                    userMagieSelezionate[chiave] = el.value;
+                }
+            });
+
+            let puntiCreazione = parseInt(document.getElementById('gen-pc').value) || 0;
+            if (!isMaster && puntiCreazione > 0) {
+                mostraPopup("Attenzione", "Devi prima spendere tutti i Punti Creazione (PC).");
+                return;
+            }
+
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const userEmailCorrente = session ? session.user.email : '';
+
+            const datiAggiornati = {
+                email: userEmailCorrente,
+                nome_giocatore: document.getElementById('gen-giocatore').value,
+                nome_personaggio: document.getElementById('gen-personaggio').value,
+                religione: document.getElementById('gen-religione').value,
+                eta: parseInt(document.getElementById('gen-eta').value) || null,
+                provenienza_regione: document.getElementById('gen-provenienza-regione').value,
+                provenienza_libera: document.getElementById('gen-provenienza-libera').value,
+                inventario: document.getElementById('txt-inventario').value,
+                diario: document.getElementById('txt-diario').value,
+                background: document.getElementById('txt-background').value,
+                punti_creazione: puntiCreazione,
+                punti_esperienza: parseInt(document.getElementById('gen-pe').value) || 0,
+                punti_ferita: parseInt(document.getElementById('gen-pf').value) || 3,
+                cartellini_volonta: parseInt(document.getElementById('gen-volonta').value) || 0,
+                scheda_salvata: true,
+                magie_selezionate: userMagieSelezionate
+            };
+
+            await supabaseClient.from('personaggi').update(datiAggiornati).eq('user_id', idSalvataggio);
+
+            let abilitàDaSalvare = [];
+            for (let abId in userAbilities) {
+                let livello = userAbilities[abId];
+                if (livello > 0) {
+                    abilitàDaSalvare.push({
+                        user_id: idSalvataggio,
+                        abilita_id: abId.toString(),
+                        livello: livello
+                    });
+                }
+            }
+
+            await supabaseClient.from('personaggio_abilita').delete().eq('user_id', idSalvataggio);
+            if (abilitàDaSalvare.length > 0) {
+                const { error } = await supabaseClient
+                    .from('personaggio_abilita')
+                    .insert(abilitàDaSalvare);
+                if (error) {
+                    console.error("Errore durante il salvataggio delle abilità:", error);
+                }
+            }
+
+            userAbilitiesSaved = { ...userAbilities };
+            schedaSalvataInDb = true;
+
+            if (!isMaster) {
+                document.getElementById('btn-crea').disabled = true;
+                document.getElementById('btn-aggiorna').disabled = false;
+                bloccaTuttiCampi(true);
+            }
+
+            mostraPopup("Salvataggio Completato", "Scheda salvata con successo!");
+        };
+
+        checkSession();
+    </script>
+</body>
+</html>
