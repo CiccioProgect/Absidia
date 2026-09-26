@@ -198,16 +198,6 @@
             text-align: center;
         }
 
-        /* Intestazione PDF standard nascosta a schermo, visibile in stampa PDF standard */
-        .print-header {
-            display: none;
-        }
-
-        /* Container Vademecum (nascosto a schermo, visibile solo in stampa Vademecum) */
-        #vademecum-card {
-            display: none;
-        }
-
         .portal-card .login-instructions {
             font-style: normal;
             color: var(--text-faded);
@@ -317,7 +307,7 @@
         .portal-btn:disabled {
             background: rgba(5, 10, 14, 0.5);
             color: var(--text-faded);
-            border-color: rgba(138, 160, 179, 0.2);
+            border-color: rgba(138, 160, 179, 0.3);
             cursor: not-allowed;
         }
 
@@ -572,201 +562,6 @@
             background-color: #070e12;
         }
 
-        /* Stili di Stampa Dedicati */
-        @media print {
-            body.print-standard {
-                background: #09131a !important;
-                color: #e6edf2 !important;
-                font-size: 9pt !important;
-                line-height: 1.3 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            body.print-standard @page {
-                size: A4;
-                margin: 10mm;
-            }
-
-            body.print-vademecum {
-                background: #09131a !important;
-                color: #e6edf2 !important;
-                font-size: 8.5pt !important;
-                line-height: 1.2 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            body.print-vademecum @page {
-                size: A6 landscape;
-                margin: 6mm;
-            }
-
-            /* Nascondi elementi comuni non necessari in stampa */
-            body .map-bg-container, 
-            body header, 
-            body footer, 
-            body .instructions-sidebar, 
-            body .actions-sidebar, 
-            body .sheet-nav-tabs, 
-            body .portal-layout,
-            body .audio-container, 
-            body #custom-popup-overlay {
-                display: none !important;
-            }
-
-            /* Stampa PDF Standard */
-            body.print-standard .portal-layout {
-                display: flex !important;
-            }
-            body.print-standard .portal-card {
-                background: rgba(17, 30, 38, 0.98) !important;
-                border: 2px solid #a9c6de !important;
-                border-radius: 8px !important;
-                box-shadow: 0 0 15px rgba(0,0,0,0.8) !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                padding: 15px !important;
-                display: block !important;
-            }
-            body.print-standard #vademecum-card {
-                display: none !important;
-            }
-            body.print-standard .print-header {
-                display: flex !important;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                border-bottom: 2px solid #a9c6de;
-                margin-bottom: 12px;
-                padding-bottom: 8px;
-                text-align: center;
-            }
-            body.print-standard .print-logo-cappello {
-                height: 55px;
-                width: auto;
-                filter: drop-shadow(0 2px 5px rgba(0,0,0,0.9)) sepia(30%) hue-rotate(170deg) saturate(70%);
-            }
-            body.print-standard .print-logo-scritta {
-                height: 30px;
-                width: auto;
-                margin-top: 4px;
-            }
-            body.print-standard .print-subtitle {
-                font-family: 'Cinzel', serif;
-                font-size: 7.5pt;
-                color: #8aa0b3;
-                letter-spacing: 2px;
-                margin-top: 4px;
-            }
-            body.print-standard .portal-card > h2 {
-                display: none !important;
-            }
-            body.print-standard .tab-pane {
-                display: none !important;
-            }
-            body.print-standard #pane-dati, 
-            body.print-standard #pane-abilita, 
-            body.print-standard #pane-inventario, 
-            body.print-standard #pane-diario, 
-            body.print-standard #pane-background {
-                display: block !important;
-            }
-            body.print-standard #pane-abilita {
-                page-break-after: always;
-            }
-            body.print-standard .ability-item.inactive, body.print-standard .ability-item.available {
-                display: none !important;
-            }
-            body.print-standard .ability-item.active {
-                display: flex !important;
-                border: 1px solid #a9c6de !important;
-                background: rgba(9, 19, 26, 0.9) !important;
-                padding: 3px 6px !important;
-                margin-bottom: 3px !important;
-                border-radius: 3px;
-            }
-            body.print-standard .ability-name {
-                color: #e6edf2 !important;
-                font-size: 8.5pt !important;
-                font-family: 'Cinzel', serif;
-            }
-
-            /* Stampa Vademecum */
-            body.print-vademecum #vademecum-card {
-                display: block !important;
-                background: rgba(17, 30, 38, 0.96) !important;
-                border: 2px solid #a9c6de !important;
-                border-radius: 6px !important;
-                padding: 10px !important;
-                width: 100% !important;
-                position: relative;
-                overflow: hidden;
-            }
-            body.print-vademecum #vademecum-card::before {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-image: url('Logo Completo.png');
-                background-position: center;
-                background-repeat: no-repeat;
-                background-size: 40% auto;
-                opacity: 0.08;
-                pointer-events: none;
-                z-index: 0;
-            }
-            body.print-vademecum .vd-content {
-                position: relative;
-                z-index: 1;
-            }
-            body.print-vademecum .vd-header {
-                text-align: center;
-                border-bottom: 1.5px solid #a9c6de;
-                padding-bottom: 4px;
-                margin-bottom: 6px;
-            }
-            body.print-vademecum .vd-header h3 {
-                font-family: 'Cinzel', serif;
-                font-size: 10pt;
-                color: #e6edf2;
-                letter-spacing: 1px;
-            }
-            body.print-vademecum .vd-header p {
-                font-family: 'Cinzel', serif;
-                font-size: 7pt;
-                color: #8aa0b3;
-            }
-            body.print-vademecum .vd-grid {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 4px 8px;
-                margin-bottom: 6px;
-                font-size: 8pt;
-            }
-            body.print-vademecum .vd-item span {
-                color: #8aa0b3;
-                font-family: 'Cinzel', serif;
-            }
-            body.print-vademecum .vd-section {
-                margin-top: 4px;
-                border-top: 1px dashed rgba(138, 160, 179, 0.4);
-                padding-top: 3px;
-            }
-            body.print-vademecum .vd-section-title {
-                font-family: 'Cinzel', serif;
-                font-size: 8pt;
-                color: #a9c6de;
-                font-weight: bold;
-                margin-bottom: 2px;
-            }
-            body.print-vademecum .vd-section-body {
-                font-size: 7.5pt;
-                color: #e6edf2;
-                line-height: 1.25;
-            }
-        }
-
         @media(max-width: 1200px) {
             .portal-layout {
                 flex-direction: column;
@@ -816,23 +611,6 @@
     </header>
 
     <main>
-        <!-- CARD VADEMECUM FORMATO BIGLIETTO DA VISITA (Spostata all'esterno per la stampa corretta) -->
-        <div id="vademecum-card">
-            <div class="vd-content">
-                <div class="vd-header">
-                    <h3 id="vd-nome-pg">Nome Personaggio</h3>
-                    <p>VADEMECUM TASCABILE — REGNO DI ELAYA</p>
-                </div>
-                <div class="vd-grid">
-                    <div class="vd-item"><span>Giocatore:</span> <strong id="vd-nome-giocatore">-</strong></div>
-                    <div class="vd-item"><span>Punti Ferita:</span> <strong id="vd-pf">-</strong></div>
-                    <div class="vd-item"><span>Essenza Volontà:</span> <strong id="vd-volonta">-</strong></div>
-                    <div class="vd-item"><span>Essenze Magia:</span> <strong id="vd-essenze-magia">-</strong></div>
-                </div>
-                <div id="vd-sezioni-dinamiche"></div>
-            </div>
-        </div>
-
         <div class="portal-layout">
             <!-- Box istruzioni laterale a sinistra (visibile solo dopo il login) -->
             <div id="instructions-sidebar" class="instructions-sidebar">
@@ -847,13 +625,6 @@
             <!-- SCHEDA PRINCIPALE -->
             <div class="portal-card">
                 <h2>Scheda Giocatore</h2>
-                <!-- Intestazione grafica dedicata al PDF Standard (visibile solo in stampa standard) -->
-                <div class="print-header">
-                    <img src="Cappello.png" alt="Absidia Cappello" class="print-logo-cappello">
-                    <img src="Logo Scritta.png" alt="ABSIDIA" class="print-logo-scritta">
-                    <p class="print-subtitle">REGNO DI ELAYA — PORTALE UFFICIALE DEL PERSONAGGIO</p>
-                </div>
-
                 <!-- Testo esplicativo visibile solo nella fase di login -->
                 <span id="login-instructions" class="login-instructions">Inserisci la tua mail e password per effettuare il login, oppure registrati inserendo una email valida ed una password di 8 caratteri contenente almeno un carattere speciale, un numero, una lettera maiuscola ed una lettera minuscola.</span>
 
@@ -1144,8 +915,6 @@
                 <button id="btn-crea" class="portal-btn" onclick="abilitaCreazioneScheda()" disabled>Crea Scheda</button>
                 <button id="btn-aggiorna" class="portal-btn alt" onclick="abilitaAggiornamentoScheda()" disabled>Aggiorna Scheda</button>
                 <button id="btn-salva" class="portal-btn alt" onclick="salvaScheda()" disabled>Salva Scheda</button>
-                <button id="btn-pdf" class="portal-btn alt" onclick="esportaPdf()">Esporta PDF</button>
-                <button id="btn-vademecum" class="portal-btn alt" onclick="esportaVademecum()">Esporta Vademecum</button>
                 <button id="btn-esci" class="portal-btn danger" onclick="signOut()">Esci</button>
             </div>
         </div>
@@ -1182,70 +951,6 @@
         function chiudiPopupMessaggio() {
             document.getElementById('custom-popup-overlay').style.display = 'none';
         }
-
-        window.esportaPdf = function() {
-            document.body.classList.remove('print-vademecum');
-            document.body.classList.add('print-standard');
-            window.print();
-        };
-
-        window.esportaVademecum = function() {
-            // Raccoglie i dati e popola il biglietto tascabile prima della stampa
-            document.getElementById('vd-nome-pg').innerText = document.getElementById('gen-personaggio').value || 'Senza Nome';
-            document.getElementById('vd-nome-giocatore').innerText = document.getElementById('gen-giocatore').value || '-';
-            document.getElementById('vd-pf').innerText = document.getElementById('gen-pf').value || '3';
-            document.getElementById('vd-volonta').innerText = document.getElementById('gen-volonta').value || '0';
-            
-            let cComuni = document.getElementById('gen-cm-comuni').value || 0;
-            let cNonComuni = document.getElementById('gen-cm-non-comuni').value || 0;
-            let cRari = document.getElementById('gen-cm-rari').value || 0;
-            let cLegg = document.getElementById('gen-cm-leggendari').value || 0;
-            document.getElementById('vd-essenze-magia').innerText = `Comuni: ${cComuni} | Non Comuni: ${cNonComuni} | Rare: ${cRari} | Leggendarie: ${cLegg}`;
-
-            // Mappa delle sezioni magiche/lavorazioni da verificare e inserire se valorizzate
-            const categorieVademecum = [
-                { prefix: 'magie', titolo: 'Incantesimi Arcani' },
-                { prefix: 'miracoli', titolo: 'Miracoli Divini' },
-                { prefix: 'evocazioni', titolo: 'Evocazioni Druidiche' },
-                { prefix: 'canalizzazioni', titolo: 'Canalizzazioni Mistiche' },
-                { prefix: 'lavorazioni-fabbro', titolo: 'Lavorazioni Fabbro' },
-                { prefix: 'ricette-fattucchiere', titolo: 'Ricette da Fattucchiere' },
-                { prefix: 'reazioni-alchimia', titolo: 'Reazioni di Alchimia' },
-                { prefix: 'lavorazioni-carpenteria', titolo: 'Lavorazioni Carpenteria' },
-                { prefix: 'lavorazioni-sarto', titolo: 'Lavorazioni Sartoria' },
-                { prefix: 'lavorazioni-lapidario', titolo: 'Lavorazioni Lapidario' }
-            ];
-
-            let htmlSezioni = '';
-            categorieVademecum.forEach(cat => {
-                let elementiTrovati = [];
-                ['comuni', 'non-comuni', 'rare', 'leggendarie'].forEach(livello => {
-                    let containerLiv = document.getElementById(`${cat.prefix}-${livello}`);
-                    if (containerLiv) {
-                        containerLiv.querySelectorAll('select, input').forEach(el => {
-                            if (el.value && el.value.trim() !== '') {
-                                elementiTrovati.push(el.value);
-                            }
-                        });
-                    }
-                });
-
-                if (elementiTrovati.length > 0) {
-                    htmlSezioni += `
-                        <div class="vd-section">
-                            <div class="vd-section-title">${cat.titolo}</div>
-                            <div class="vd-section-body">${elementiTrovati.join(', ')}</div>
-                        </div>
-                    `;
-                }
-            });
-
-            document.getElementById('vd-sezioni-dinamiche').innerHTML = htmlSezioni;
-
-            document.body.classList.remove('print-standard');
-            document.body.classList.add('print-vademecum');
-            window.print();
-        };
 
         const SUPABASE_URL = 'https://mblrwjzrbvddurmlgvlf.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Yk7HgEemUbfqMAxgjVHygQ_UVenqgio';
@@ -1455,7 +1160,7 @@
                 if (isMaster && !targetUserIdMaster) {
                     profileSection.style.display = 'none';
                     masterDashboard.style.display = 'block';
-                    if (actionsSidebar) actionsSidebar.style.display = 'none';
+                    if (actionsSidebar) actionsSidebar.style.display = 'none'; // Nasconde il box azioni laterale nella vista globale master
                     await caricaListaSchedeMaster();
                 } else {
                     masterDashboard.style.display = 'none';
