@@ -85,6 +85,23 @@
             border-bottom: 1px solid var(--text-faded);
         }
 
+
+	.back-link {
+            font-family: 'Cinzel', serif;
+            color: var(--text-faded);
+            text-decoration: none;
+            font-size: 0.855rem;
+            letter-spacing: 2px;
+            transition: color 0.3s ease;
+            position: absolute;
+            left: 2rem;
+            top: 2rem;
+        }
+
+        .back-link:hover {
+            color: var(--text-foam);
+        }
+
         .header-stack-container {
             display: flex;
             flex-direction: column;
@@ -562,6 +579,12 @@
             background-color: #070e12;
         }
 
+	@media (max-width: 900px) {
+            .back-link {
+                position: static;
+                display: block;
+                margin-bottom: 1rem;
+
         @media(max-width: 1200px) {
             .portal-layout {
                 flex-direction: column;
@@ -597,11 +620,13 @@
     </div>
 
     <header>
-        <div class="header-stack-container">
+        <a href="portale.html" class="back-link">&larr; TORNA AL PORTALE</a>
+	<div class="header-stack-container">
             <img src="Cappello.png" alt="Absidia Cappello" class="header-logo-cappello">
             <img src="Logo Scritta.png" alt="ABSIDIA" class="header-logo-scritta">
         </div>
-        <!-- Player Audio in alto a destra nell'intestazione -->
+	      
+	<!-- Player Audio in alto a destra nell'intestazione -->
         <div class="audio-container">
             <audio id="bgAudio" autoplay controls loop>
                 <source src="Protettori.mp3" type="audio/mpeg">
