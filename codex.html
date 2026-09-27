@@ -20,7 +20,12 @@
             padding: 0;
         }
 
+        /* --- PROTEZIONI CONTRO COPIA E TRASCINAMENTO --- */
         body {
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none;    /* Firefox */
+            -ms-user-select: none;     /* Internet Explorer/Edge */
+            user-select: none;         /* Standard */
             background-color: var(--bg-ocean);
             color: var(--text-foam);
             font-family: 'IM Fell English', serif;
@@ -31,6 +36,11 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+        }
+
+        img, .heraldry-emblem, .header-logo-cappello, .header-logo-scritta, .map-image {
+            -webkit-user-drag: none;
+            user-drag: none;
         }
 
         /* Contenitore Sfondi Mappa in dissolvenza */
@@ -221,6 +231,7 @@
             width: 100%;
             max-width: 950px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .manual-card {
@@ -229,6 +240,7 @@
             border-radius: 8px;
             padding: 1.8rem;
             flex: 1;
+            min-width: 260px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.7);
             display: flex;
             flex-direction: column;
@@ -390,6 +402,10 @@
                 <div class="manual-title">ABSIDIA - AMBIENTAZIONE</div>
                 <a href="Absidia - Ambientazione.pdf" class="download-btn" target="_blank" rel="noopener noreferrer">DOWNLOAD</a>
             </div>
+            <div class="manual-card">
+                <div class="manual-title">ABSIDIA - ABILITÀ</div>
+                <a href="AbsidiaAbilità.pdf" class="download-btn" target="_blank" rel="noopener noreferrer">DOWNLOAD</a>
+            </div>
         </div>
     </main>
 
@@ -398,6 +414,36 @@
     </footer>
 
     <script>
+        // --- PROTEZIONI CONTRO IL FURTO DI CONTENUTI ---
+
+        // 1. Disabilita il tasto destro del mouse
+        document.addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+        });
+
+        // 2. Disabilita il trascinamento delle immagini
+        document.addEventListener('dragstart', function(event) {
+            event.preventDefault();
+        });
+
+        // 3. Disabilita le combinazioni da tastiera (Ctrl+C, Ctrl+U, Ctrl+S, F12, ecc.)
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'F12') {
+                event.preventDefault();
+                return false;
+            }
+
+            if (event.ctrlKey && (event.key === 'u' || event.key === 's' || event.key === 'c' || event.key === 'a' || event.key === 'p')) {
+                event.preventDefault();
+                return false;
+            }
+
+            if (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'J' || event.key === 'C' || event.key === 'i' || event.key === 'j' || event.key === 'c')) {
+                event.preventDefault();
+                return false;
+            }
+        });
+
         // --- Logica Alternanza Mappe di Sfondo ---
         const mapBg1 = document.getElementById('map1');
         const mapBg2 = document.getElementById('map2');
@@ -430,13 +476,11 @@
         audio.volume = 0.6;
 
         window.onload = () => {
-            // Tenta l'avvio automatico (sfrutta l'ereditarietà se arrivi dal portale)
             audio.play().then(() => {
                 audioPrompt.classList.remove('show');
             }).catch(() => {
                 audioPrompt.classList.add('show');
                 
-                // Sblocco al primo clic sul documento se il browser dovesse bloccarlo
                 const unlockAudio = () => {
                     audio.play().then(() => {
                         audioPrompt.classList.remove('show');
