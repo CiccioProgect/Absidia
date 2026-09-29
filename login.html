@@ -584,6 +584,8 @@
                 position: static;
                 display: block;
                 margin-bottom: 1rem;
+            }
+        }
 
         @media(max-width: 1200px) {
             .portal-layout {
@@ -1476,6 +1478,8 @@
             document.getElementById('gen-giocatore').value = personaggio?.nome_giocatore || '';
             document.getElementById('user-email').value = personaggio?.email || personaggio?.user_id || '';
             document.getElementById('gen-personaggio').value = personaggio?.nome_personaggio || '';
+            document.getElementById('gen-razza').value = personaggio?.razza || 'Umano';
+            document.getElementById('gen-razza').disabled = true; // Sempre disabilitato per il giocatore
             document.getElementById('gen-religione').value = personaggio?.religione || '';
             document.getElementById('gen-eta').value = personaggio?.eta || '';
             document.getElementById('gen-provenienza-regione').value = personaggio?.provenienza_regione || '';
@@ -2029,98 +2033,20 @@
                     let opacityStyle = slotDisponibile ? 'opacity: 1;' : 'opacity: 0.35;';
 
                     if (magieDisponibiliLivello.length > 0) {
-                        html += `<select data-key="${chiaveValore}" onchange="userMagieSelezionate['${chiaveValore}']=this.value;" ${isDisabledInput ? 'disabled' : ''} style="font-size: 0.85rem; padding: 0.3rem; margin: 0.2rem 0; ${opacityStyle}">`;
-                        html += `<option value="">-- Seleziona (Slot ${i}) --</option>`;
+                        html += `<select data-key="${chiaveValore}" onchange="userMagieSelezionate['${chiaveValore}']=this.value;" ${isDisabledInput ? 'disabled' : ''} style="${opacityStyle}">`;
+                        html += `<option value="">-- Seleziona --</option>`;
                         magieDisponibiliLivello.forEach(magia => {
-                            let selectedAttr = (valoreSalvato === magia) ? 'selected' : '';
-                            html += `<option value="${magia}" ${selectedAttr}>${magia}</option>`;
+                            let selected = (valoreSalvato === magia) ? 'selected' : '';
+                            html += `<option value="${magia}" ${selected}>${magia}</option>`;
                         });
                         html += `</select>`;
                     } else {
-                        let placeholderText = slotDisponibile ? `Slot ${i}` : `-`;
-                        html += `<input type="text" placeholder="${placeholderText}" value="${valoreSalvato}" oninput="userMagieSelezionate['${chiaveValore}']=this.value;" ${isDisabledInput ? 'disabled' : ''} style="font-size: 0.85rem; padding: 0.3rem; margin: 0.2rem 0; ${opacityStyle}">`;
+                        html += `<input type="text" data-key="${chiaveValore}" value="${valoreSalvato}" placeholder="Nome ${item.cat}..." oninput="userMagieSelezionate['${chiaveValore}']=this.value;" ${isDisabledInput ? 'disabled' : ''} style="${opacityStyle}">`;
                     }
                 }
                 container.innerHTML = html;
             });
         }
-
-        window.salvaScheda = async function() {
-            let idSalvataggio = isMaster && targetUserIdMaster ? targetUserIdMaster : currentUserId;
-            if (!idSalvataggio) return;
-
-            document.querySelectorAll('#profile-section .magic-columns select, #profile-section .magic-columns input').forEach(el => {
-                let chiave = el.getAttribute('data-key');
-                if (chiave && el.value) {
-                    userMagieSelezionate[chiave] = el.value;
-                }
-            });
-
-            let puntiCreazione = parseInt(document.getElementById('gen-pc').value) || 0;
-            if (!isMaster && puntiCreazione > 0) {
-                mostraPopup("Attenzione", "Devi prima spendere tutti i Punti Creazione (PC).");
-                return;
-            }
-
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            const userEmailCorrente = session ? session.user.email : '';
-
-            const datiAggiornati = {
-                email: userEmailCorrente,
-                nome_giocatore: document.getElementById('gen-giocatore').value,
-                nome_personaggio: document.getElementById('gen-personaggio').value,
-                religione: document.getElementById('gen-religione').value,
-                eta: parseInt(document.getElementById('gen-eta').value) || null,
-                provenienza_regione: document.getElementById('gen-provenienza-regione').value,
-                provenienza_libera: document.getElementById('gen-provenienza-libera').value,
-                inventario: document.getElementById('txt-inventario').value,
-                diario: document.getElementById('txt-diario').value,
-                background: document.getElementById('txt-background').value,
-                punti_creazione: puntiCreazione,
-                punti_esperienza: parseInt(document.getElementById('gen-pe').value) || 0,
-                punti_ferita: parseInt(document.getElementById('gen-pf').value) || 3,
-                cartellini_volonta: parseInt(document.getElementById('gen-volonta').value) || 0,
-                scheda_salvata: true,
-                magie_selezionate: userMagieSelezionate
-            };
-
-            await supabaseClient.from('personaggi').update(datiAggiornati).eq('user_id', idSalvataggio);
-
-            let abilitàDaSalvare = [];
-            for (let abId in userAbilities) {
-                let livello = userAbilities[abId];
-                if (livello > 0) {
-                    abilitàDaSalvare.push({
-                        user_id: idSalvataggio,
-                        abilita_id: abId.toString(),
-                        livello: livello
-                    });
-                }
-            }
-
-            await supabaseClient.from('personaggio_abilita').delete().eq('user_id', idSalvataggio);
-            if (abilitàDaSalvare.length > 0) {
-                const { error } = await supabaseClient
-                    .from('personaggio_abilita')
-                    .insert(abilitàDaSalvare);
-                if (error) {
-                    console.error("Errore durante il salvataggio delle abilità:", error);
-                }
-            }
-
-            userAbilitiesSaved = { ...userAbilities };
-            schedaSalvataInDb = true;
-
-            if (!isMaster) {
-                document.getElementById('btn-crea').disabled = true;
-                document.getElementById('btn-aggiorna').disabled = false;
-                bloccaTuttiCampi(true);
-            }
-
-            mostraPopup("Salvataggio Completato", "Scheda salvata con successo!");
-        };
-
-        checkSession();
     </script>
 </body>
 </html>
