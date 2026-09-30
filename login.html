@@ -1447,14 +1447,31 @@
             let userId = getActiveUserId();
             if (!userId) return;
 
+	// Controllo sul nome del giocatore
+    	    let nomeGiocatore = document.getElementById('gen-giocatore').value.trim();
+    	    if (!nomeGiocatore) {
+            	mostraPopup("Attenzione", "Il nome del giocatore è obbligatorio.");
+        	return;
+            }
+
+	// Controllo sul nome del personaggio
             let nomePersonaggio = document.getElementById('gen-personaggio').value.trim();
             if (!nomePersonaggio) {
                 mostraPopup("Attenzione", "Il nome del personaggio è obbligatorio.");
                 return;
             }
 
+	/ Recupera il valore residuo dei Punti Creazione (sostituisci 'punti-residui' con l'ID effettivo del tuo elemento HTML)
+    	    let puntiResidui = parseInt(document.getElementById('abilita-pc-disp').value) || 0;
+
+    	// Controllo: se i punti residui sono superiori a 0, blocca il salvataggio
+            if (puntiResidui > 0) {
+               mostraPopup("Attenzione", `Non puoi salvare la scheda: ti rimangono ancora ${puntiResidui} Punti Creazione da spendere.`);
+               return;
+            }
+
             let datiAggiornati = {
-                nome_giocatore: document.getElementById('gen-giocatore').value.trim(),
+                nome_giocatore: nomeGiocatore,
                 nome_personaggio: nomePersonaggio,
                 religione: document.getElementById('gen-religione').value.trim(),
                 eta: parseInt(document.getElementById('gen-eta').value) || null,
