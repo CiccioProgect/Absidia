@@ -1442,7 +1442,7 @@
             caricaListaSchedeMaster();
         };
 
-        // Funzione implementata per il salvataggio della scheda e delle abilità (con controllo PC > 0)
+        // Funzione implementata per il salvataggio della scheda e delle abilità
         window.salvaScheda = async function() {
             let userId = getActiveUserId();
             if (!userId) return;
@@ -1453,13 +1453,6 @@
                 return;
             }
 
-            // CONTROLLO PUNTI CREAZIONE SUPERIORI A 0
-            let puntiCreazione = parseInt(document.getElementById('gen-pc').value) || 0;
-            if (puntiCreazione > 0) {
-                mostraPopup("Impossibile Salvare", "Non puoi salvare la scheda finché hai Punti Creazione superiori a 0. Spendili tutti prima di procedere!");
-                return;
-            }
-
             let datiAggiornati = {
                 nome_giocatore: document.getElementById('gen-giocatore').value.trim(),
                 nome_personaggio: nomePersonaggio,
@@ -1467,7 +1460,7 @@
                 eta: parseInt(document.getElementById('gen-eta').value) || null,
                 provenienza_regione: document.getElementById('gen-provenienza-regione').value,
                 provenienza_libera: document.getElementById('gen-provenienza-libera').value.trim(),
-                punti_creazione: puntiCreazione,
+                punti_creazione: parseInt(document.getElementById('gen-pc').value) || 0,
                 punti_esperienza: parseInt(document.getElementById('gen-pe').value) || 0,
                 punti_ferita: parseInt(document.getElementById('gen-pf').value) || 3,
                 cartellini_volonta: parseInt(document.getElementById('gen-volonta').value) || 0,
@@ -1568,7 +1561,7 @@
             document.getElementById('user-email').value = personaggio?.email || personaggio?.user_id || '';
             document.getElementById('gen-personaggio').value = personaggio?.nome_personaggio || '';
             document.getElementById('gen-razza').value = personaggio?.razza || 'Umano';
-            document.getElementById('gen-razza').disabled = true;
+            document.getElementById('gen-razza').disabled = true; // Sempre disabilitato per il giocatore
             document.getElementById('gen-religione').value = personaggio?.religione || '';
             document.getElementById('gen-eta').value = personaggio?.eta || '';
             document.getElementById('gen-provenienza-regione').value = personaggio?.provenienza_regione || '';
@@ -1945,34 +1938,58 @@
             return true;
         }
 
-        function ottieniColoreAbilita(ab, currentLvl) {
-            let maxL = ab.max_level || 1;
-            if (currentLvl > 0) return 'active';
-            if (prerequisitiSoddisfatti(ab)) return 'available';
-            return 'inactive';
+        function ottieniTestoPrerequisiti(ab) {
+            let abNameUpper = ab.name.toUpperCase();
+            if (abNameUpper === "SAPIENZA MAGICA") return "Prerequisito: Magia Arcana I, Magia Divina I, Magia Druidica I, Guardia Divina I, Stregoneria I, Guardiano della Natura I o Magia Mistica I";
+            if (abNameUpper === "GUARDIANO DELLA NATURA") return "Prerequisito: Affinità con la Natura I + (Arcieria I o Maestro di Lame I)";
+
+            let prereqs = abilitaPrerequisitiMap[ab.id];
+            if (!prereqs || prereqs.length === 0) return "Nessun prerequisito";
+
+            let descrizioni = [];
+            let tuttiSoddisfatti = true;
+            for (let p of prereqs) {
+                let abilitaReq = allAbilitiesList.find(x => x.id === p.prerequisito_id);
+                let nomeReq = abilitaReq ? abilitaReq.name : "Abilità sconosciuta";
+                let livelloPosseduto = userAbilities[p.prerequisito_id] || 0;
+                if (livelloPosseduto < p.livello_richiesto) tuttiSoddisfatti = false;
+                descrizioni.push(`${nomeReq} (Richiesto Liv. ${p.livello_richiesto})`);
+            }
+            return tuttiSoddisfatti ? "Prerequisiti soddisfatti" : "Prerequisiti: " + descrizioni.join(", ");
         }
 
         function renderAbilitaUI() {
             const container = document.getElementById('abilita-container');
-            if (!container) return;
+            if (!allAbilitiesList.length) {
+                container.innerHTML = '<p style="color: var(--text-faded); font-style: italic;">Nessuna abilità trovata.</p>';
+                return;
+            }
 
             let html = '<div class="abilities-grid">';
             allAbilitiesList.forEach(ab => {
-                let lvl = userAbilities[ab.id] || 0;
-                let maxL = ab.max_level || 1;
-                let stateClass = ottieniColoreAbilita(ab, lvl);
+                let currentLevel = userAbilities[ab.id] || 0;
+                let eRipetibile = abilitaRipetibili.map(r => r.toUpperCase()).includes(ab.name.toUpperCase());                
+                let testoLivello = `Liv. ${currentLevel}`;
+                if (eRipetibile && currentLevel > 4) {
+                    let livelloEffettivo = ((currentLevel - 1) % 4) + 1;
+                    testoLivello = `Liv. ${currentLevel} (Eff. ${livelloEffettivo})`;
+                } else if (!eRipetibile) {
+                    testoLivello += `/${ab.max_level || 4}`;
+                }
 
-                let btnMinusDisabled = (!editModeActive || lvl === 0) ? 'disabled' : '';
-                let btnPlusDisabled = (!editModeActive || lvl >= maxL) ? '' : '';
+                let disabledAttr = (!editModeActive && !isMaster) ? 'disabled' : '';
+                let statusClass = currentLevel > 0 ? 'active' : (prerequisitiSoddisfatti(ab) ? 'available' : 'inactive');
 
                 html += `
-                    <div class="ability-item ${stateClass}" onmouseenter="mostraPopupAbilita(this, '${ab.description || ''}')" onmouseleave="nascondiPopupAbilita(this)">
-                        <span class="ability-name">${ab.name} (${lvl}/${maxL})</span>
-                        <div class="ability-controls">
-                            <button ${btnMinusDisabled} onclick="modificaAbilita(${ab.id}, -1)">-</button>
-                            <button ${btnPlusDisabled} onclick="modificaAbilita(${ab.id}, 1)">+</button>
+                    <div class="ability-item ${statusClass}" onmouseenter="avviaTimerPopup(this, ${ab.id})" onmouseleave="chiudiPopup(this)">
+                        <div class="ability-info">
+                            <div class="ability-name">${ab.name} (<span id="lvl-${ab.id}">${testoLivello}</span>)</div>
                         </div>
-                        <div class="ability-popup">${ab.description || 'Nessuna descrizione disponibile.'}</div>
+                        <div class="ability-controls">
+                            <button onclick="modificaAbilita(${ab.id}, -1)" ${(!editModeActive && !isMaster) || (schedaSalvataInDb && !isMaster && currentLevel <= (userAbilitiesSaved[ab.id] || 0)) ? 'disabled' : ''}>-</button>
+                            <button onclick="modificaAbilita(${ab.id}, 1)" ${disabledAttr}>+</button>
+                        </div>
+                        <div class="ability-popup" id="popup-${ab.id}">${ottieniTestoPrerequisiti(ab)}</div>
                     </div>
                 `;
             });
@@ -1980,100 +1997,138 @@
             container.innerHTML = html;
         }
 
-        window.modificaAbilita = function(abId, delta) {
-            if (!editModeActive) return;
-            let currentLvl = userAbilities[abId] || 0;
-            let ab = allAbilitiesList.find(x => x.id === abId);
+        let popupTimer = null;
+        window.avviaTimerPopup = function(elemento, abId) {
+            clearTimeout(popupTimer);
+            popupTimer = setTimeout(() => {
+                const popup = document.getElementById(`popup-${abId}`);
+                if (popup) popup.style.display = 'block';
+            }, 1000);
+        };
+
+        window.chiudiPopup = function(elemento) {
+            clearTimeout(popupTimer);
+            elemento.querySelectorAll('.ability-popup').forEach(p => p.style.display = 'none');
+        };
+
+        window.modificaAbilita = function(abilityId, delta) {
+            if (!editModeActive && !isMaster) return;
+
+            let ab = allAbilitiesList.find(x => x.id === abilityId);
             if (!ab) return;
 
-            let maxL = ab.max_level || 1;
-            let nuovoLvl = currentLvl + delta;
-            if (nuovoLvl < 0 || nuovoLvl > maxL) return;
+            let currentLevel = userAbilities[abilityId] || 0;
+            let newLevel = currentLevel + delta;
+            let minLevel = isMaster ? 0 : (userAbilitiesSaved[abilityId] || 0); 
+            if (newLevel < minLevel || newLevel < 0) return;
+
+            let eRipetibile = abilitaRipetibili.map(r => r.toUpperCase()).includes(ab.name.toUpperCase());
+            if (!eRipetibile && delta > 0 && newLevel > (ab.max_level || 4)) return;
 
             if (delta > 0) {
-                if (!abilitaRipetibili.includes(ab.name) && currentLvl > 0) {
-                    return; 
-                }
-                let tempAbilities = { ...userAbilities, [abId]: nuovoLvl };
-                let testTotaleLivelli = Object.values(tempAbilities).reduce((a, b) => a + b, 0);
-                let testCostoTotale = testTotaleLivelli * 5;
-                let testDisponibile = 25 + totalPePool;
-                if (testCostoTotale > testDisponibile) {
-                    mostraPopup("Attenzione", "Punti Creazione ed Esperienza insufficienti per apprendere questa abilità.");
+                if (!isMaster && !prerequisitiSoddisfatti(ab)) {
+                    mostraPopup("Attenzione", `Non possiedi i prerequisiti per "${ab.name}".`);
                     return;
                 }
-            } else {
-                if (isMaster) {
-                    // Consenti al master
-                } else if (!schedaSalvataInDb) {
-                    // In fase di creazione libera
-                } else {
-                    return; // Bloccato se già salvata per i giocatori normali
+
+                if (newLevel === 4) {
+                    let altraAAlmenoTre = false;
+                    for (let otherId in userAbilities) {
+                        if (String(otherId) !== String(abilityId)) {
+                            if ((userAbilities[otherId] || 0) >= 3) {
+                                altraAAlmenoTre = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!isMaster && !altraAAlmenoTre) {
+                        mostraPopup("Attenzione", `Non puoi portare "${ab.name}" al livello 4 senza possedere almeno un'altra abilità a livello 3.`);
+                        return;
+                    }
+                }
+
+                let pcDisp = parseInt(document.getElementById('gen-pc').value) || 0;
+                let peDisp = parseInt(document.getElementById('gen-pe').value) || 0;
+                if (pcDisp === 0 && peDisp === 0) {
+                    mostraPopup("Risorse Esaurite", "Punti Creazione (PC) ed Esperienza (PE) esauriti.");
+                    return;
                 }
             }
 
-            userAbilities[abId] = nuovoLvl;
-            if (nuovoLvl === 0) delete userAbilities[abId];
+            let vecchioLivello = userAbilities[abilityId] || 0;
+            userAbilities[abilityId] = newLevel;
 
-            if (!ricalcolaRisorseEAbilita()) {
-                userAbilities[abId] = currentLvl;
-                if (currentLvl === 0) delete userAbilities[abId];
+            if (!isMaster && !ricalcolaRisorseEAbilita()) {
+                userAbilities[abilityId] = vecchioLivello;
                 ricalcolaRisorseEAbilita();
+                mostraPopup("Punti Insufficienti", "Punti insufficienti per questa operazione!");
+                return;
             }
 
             renderAbilitaUI();
             ricalcolaStatisticheDerivate();
         };
 
-        window.mostraPopupAbilita = function(element, desc) {
-            const popup = element.querySelector('.ability-popup');
-            if (popup) popup.style.display = 'block';
-        };
+        function generaCampiMagieTabella(prefix, slots, catKey) {
+            const categorie = [
+                { cat: 'comuni', max: 20, count: slots.comuni },
+                { cat: 'non-comuni', max: 20, count: slots.nonComuni },
+                { cat: 'rare', max: 20, count: slots.rari },
+                { cat: 'leggendarie', max: 20, count: slots.leggendari }
+            ];
 
-        window.nascondiPopupAbilita = function(element) {
-            const popup = element.querySelector('.ability-popup');
-            if (popup) popup.style.display = 'none';
-        };
+            const listaMagieCatalogo = (catKey && cataloghiMagie[catKey]) ? cataloghiMagie[catKey] : null;
 
-        function generaCampiMagieTabella(tipoSlot, slotCounts, catKey) {
-            let livelli = ['comuni', 'non-comuni', 'rare', 'leggendarie'];
-            livelli.forEach(liv => {
-                let containerId = `${tipoSlot}-${liv}`;
-                let container = document.getElementById(containerId);
+            categorie.forEach(item => {
+                const container = document.getElementById(`${prefix}-${item.cat}`);
                 if (!container) return;
-
-                let count = slotCounts[liv] || 0;
-                let catalogoArray = (catKey && cataloghiMagie[catKey] && cataloghiMagie[catKey][liv]) ? cataloghiMagie[catKey][liv] : [];
-
-                if (!userMagieSelezionate[tipoSlot]) userMagieSelezionate[tipoSlot] = {};
-                if (!userMagieSelezionate[tipoSlot][liv]) userMagieSelezionate[tipoSlot][liv] = [];
+                
+                const selectsEsistenti = container.querySelectorAll('select, input');
+                selectsEsistenti.forEach((el, idx) => {
+                    const chiaveValore = `${prefix}-${item.cat}-${idx}`;
+                    if (el.value) {
+                        userMagieSelezionate[chiaveValore] = el.value;
+                    }
+                });
 
                 let html = '';
-                for (let i = 0; i < count; i++) {
-                    let valoreCorrente = userMagieSelezionate[tipoSlot][liv][i] || '';
-                    if (catalogoArray.length > 0) {
-                        html += `<select onchange="aggiornaMagiaSelezionata('${tipoSlot}', '${liv}', ${i}, this.value)">`;
+                let magieDisponibiliLivello = (listaMagieCatalogo && listaMagieCatalogo[item.cat]) ? listaMagieCatalogo[item.cat] : [];
+
+                for (let i = 1; i <= 20; i++) {
+                    const chiaveValore = `${prefix}-${item.cat}-${i - 1}`;
+                    let valoreSalvato = userMagieSelezionate[chiaveValore] || '';
+                    
+                    let slotDisponibile = i <= item.count;
+                    let giaValorizzato = valoreSalvato !== '';
+                    
+                    let isDisabledInput = false;
+                    if (!isMaster) {
+                        if (!editModeActive || !slotDisponibile || giaValorizzato) {
+                            isDisabledInput = true;
+                        }
+                    } else {
+                        if (!slotDisponibile) {
+                            isDisabledInput = true;
+                        }
+                    }
+                    
+                    let opacityStyle = slotDisponibile ? 'opacity: 1;' : 'opacity: 0.35;';
+
+                    if (magieDisponibiliLivello.length > 0) {
+                        html += `<select data-key="${chiaveValore}" onchange="userMagieSelezionate['${chiaveValore}']=this.value;" ${isDisabledInput ? 'disabled' : ''} style="${opacityStyle}">`;
                         html += `<option value="">-- Seleziona --</option>`;
-                        catalogoArray.forEach(item => {
-                            let selected = (item === valoreCorrente) ? 'selected' : '';
-                            html += `<option value="${item}" ${selected}>${item}</option>`;
+                        magieDisponibiliLivello.forEach(magia => {
+                            let selected = (valoreSalvato === magia) ? 'selected' : '';
+                            html += `<option value="${magia}" ${selected}>${magia}</option>`;
                         });
                         html += `</select>`;
                     } else {
-                        html += `<input type="text" placeholder="Nome elemento..." value="${valoreCorrente}" oninput="aggiornaMagiaSelezionata('${tipoSlot}', '${liv}', ${i}, this.value)">`;
+                        html += `<input type="text" data-key="${chiaveValore}" value="${valoreSalvato}" placeholder="Nome ${item.cat}..." oninput="userMagieSelezionate['${chiaveValore}']=this.value;" ${isDisabledInput ? 'disabled' : ''} style="${opacityStyle}">`;
                     }
                 }
                 container.innerHTML = html;
             });
         }
-
-        window.aggiornaMagiaSelezionata = function(tipoSlot, liv, index, val) {
-            if (!userMagieSelezionate[tipoSlot]) userMagieSelezionate[tipoSlot] = {};
-            if (!userMagieSelezionate[tipoSlot][liv]) userMagieSelezionate[tipoSlot][liv] = [];
-            userMagieSelezionate[tipoSlot][liv][index] = val;
-        };
-
-        checkSession();
     </script>
 </body>
 </html>
