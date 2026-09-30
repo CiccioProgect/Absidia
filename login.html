@@ -1442,6 +1442,88 @@
             caricaListaSchedeMaster();
         };
 
+        // Funzione implementata per il salvataggio della scheda e delle abilità
+        window.salvaScheda = async function() {
+            let userId = getActiveUserId();
+            if (!userId) return;
+
+            let nomePersonaggio = document.getElementById('gen-personaggio').value.trim();
+            if (!nomePersonaggio) {
+                mostraPopup("Attenzione", "Il nome del personaggio è obbligatorio.");
+                return;
+            }
+
+            let datiAggiornati = {
+                nome_giocatore: document.getElementById('gen-giocatore').value.trim(),
+                nome_personaggio: nomePersonaggio,
+                religione: document.getElementById('gen-religione').value.trim(),
+                eta: parseInt(document.getElementById('gen-eta').value) || null,
+                provenienza_regione: document.getElementById('gen-provenienza-regione').value,
+                provenienza_libera: document.getElementById('gen-provenienza-libera').value.trim(),
+                punti_creazione: parseInt(document.getElementById('gen-pc').value) || 0,
+                punti_esperienza: parseInt(document.getElementById('gen-pe').value) || 0,
+                punti_ferita: parseInt(document.getElementById('gen-pf').value) || 3,
+                cartellini_volonta: parseInt(document.getElementById('gen-volonta').value) || 0,
+                inventario: document.getElementById('txt-inventario').value,
+                diario: document.getElementById('txt-diario').value,
+                background: document.getElementById('txt-background').value,
+                magie_selezionate: userMagieSelezionate,
+                scheda_salvata: true
+            };
+
+            const { error: updateError } = await supabaseClient
+                .from('personaggi')
+                .update(datiAggiornati)
+                .eq('user_id', userId);
+
+            if (updateError) {
+                mostraPopup("Errore", "Errore durante il salvataggio dei dati: " + updateError.message);
+                return;
+            }
+
+            const { error: deleteAbError } = await supabaseClient
+                .from('personaggio_abilita')
+                .delete()
+                .eq('user_id', userId);
+
+            if (deleteAbError) {
+                mostraPopup("Errore", "Errore durante l'aggiornamento delle abilità: " + deleteAbError.message);
+                return;
+            }
+
+            let abToInsert = [];
+            for (let abId in userAbilities) {
+                let lvl = userAbilities[abId];
+                if (lvl > 0) {
+                    abToInsert.push({
+                        user_id: userId,
+                        abilita_id: parseInt(abId),
+                        livello: lvl
+                    });
+                }
+            }
+
+            if (abToInsert.length > 0) {
+                const { error: insertAbError } = await supabaseClient
+                    .from('personaggio_abilita')
+                    .insert(abToInsert);
+
+                if (insertAbError) {
+                    mostraPopup("Errore", "Errore durante il salvataggio delle abilità: " + insertAbError.message);
+                    return;
+                }
+            }
+
+            mostraPopup("Successo", "Scheda salvata con successo!");
+            schedaSalvataInDb = true;
+            editModeActive = false;
+
+            await caricaDatiScheda(userId);
+            if (isMaster) {
+                caricaListaSchedeMaster();
+            }
+        };
+
         async function caricaDatiScheda(userId) {
             let { data: personaggio, error } = await supabaseClient
                 .from('personaggi')
