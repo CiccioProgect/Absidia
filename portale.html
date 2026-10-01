@@ -86,8 +86,9 @@
 
         /* Intestazione Globale fissa */
         header {
+            position: relative;
             text-align: center;
-            padding: 2rem 1rem 1rem 1rem;
+            padding: 1.5rem 1rem;
             background: linear-gradient(to bottom, rgba(5, 11, 15, 0.95), rgba(9, 19, 26, 0.8));
             border-bottom: 1px solid var(--text-faded);
         }
@@ -97,72 +98,33 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 0.8rem;
+            gap: 0.5rem;
         }
 
         .header-logo-cappello {
-            height: 130px;
+            height: 100px;
             width: auto;
             filter: drop-shadow(0 4px 10px rgba(0,0,0,0.9)) sepia(30%) hue-rotate(170deg) saturate(70%) blur(0.8px);
             opacity: 0.85;
         }
 
         .header-logo-scritta {
-            height: 65px;
+            height: 50px;
             width: auto;
             filter: drop-shadow(0 2px 8px rgba(0,0,0,0.95));
-            margin-bottom: -0.2rem;
         }
 
-        header p {
-            color: var(--text-faded);
-            font-family: 'Cinzel', serif;
-            font-size: 0.8rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        /* Contenitore Principale del Portale */
-        main {
-            width: 90%;
-            max-width: 1000px;
-            margin: auto;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem 0;
-            gap: 2rem;
-        }
-
-        .portal-content-box {
-            background-color: rgba(17, 30, 38, 0.85);
-            border: 2px solid var(--text-faded);
-            border-radius: 6px;
-            padding: 2rem;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.7);
-            width: 100%;
-            max-width: 700px;
-            height: 150px;
-            display: flex;
-            align-items: center; 
-            justify-content: center; 
-            text-align: center;
-        }
-
-        /* Contenitore Player Audio centrale, senza bordo e allineato */
+        /* Player Audio in alto a destra nell'header */
         .audio-container {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: absolute;
+            top: 1.5rem;
+            right: 2rem;
+            z-index: 10;
         }
 
         .audio-container audio {
-            width: 100%;
-            max-width: 400px;
-            height: 36px;
+            width: 240px;
+            height: 32px;
             filter: sepia(30%) hue-rotate(170deg) saturate(70%);
             opacity: 0.85;
             transition: opacity 0.3s ease;
@@ -172,24 +134,120 @@
             opacity: 1;
         }
 
-        /* Sezione Pulsanti di Navigazione */
-        .portal-nav-buttons {
+        /* Contenitore Principale del Portale */
+        main {
+            width: 95%;
+            max-width: 1200px;
+            margin: auto;
+            flex-grow: 1;
             display: flex;
-            gap: 1.5rem;
+            flex-direction: column;
             justify-content: center;
-            flex-wrap: wrap;
-            width: 100%;
-            max-width: 900px;
+            align-items: center;
+            padding: 2rem 0;
+            gap: 2.5rem;
         }
 
+        /* Sezione Hero con Banner Centrale e Pulsanti ai lati */
+        .hero-section {
+            display: grid;
+            grid-template-columns: 260px 1fr 260px;
+            gap: 2rem;
+            align-items: center;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .nav-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        .nav-column.left {
+            align-items: flex-end;
+        }
+
+        .nav-column.right {
+            align-items: flex-start;
+        }
+
+        /* Banner Centrale Adattivo */
+        .portal-content-box {
+            background-color: rgba(17, 30, 38, 0.85);
+            border: 2px solid var(--text-faded);
+            border-radius: 6px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.7);
+            width: 100%;
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 2px;
+            line-height: 1.6;
+        }
+
+        .portal-content-box h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-foam);
+            margin-bottom: 0.8rem;
+            text-shadow: 0 0 10px rgba(138, 160, 179, 0.4);
+        }
+
+        .portal-content-box p {
+            font-size: 1.05rem;
+            color: var(--text-faded);
+            margin-bottom: 0.4rem;
+        }
+
+        .portal-content-box .sub-info {
+            font-size: 0.95rem;
+            color: var(--text-foam);
+            margin-top: 1rem;
+            text-transform: uppercase;
+        }
+
+        /* Secondo Box per i Comunicati (testo centrato) */
+        .portal-comunicati-box {
+            background-color: rgba(17, 30, 38, 0.85);
+            border: 2px solid var(--text-faded);
+            border-radius: 6px;
+            padding: 2.5rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.7);
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+            white-space: pre-line;
+            line-height: 1.8;
+        }
+
+        .portal-comunicati-box h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.6rem;
+            color: var(--border-brass);
+            margin-bottom: 1.5rem;
+            letter-spacing: 2px;
+        }
+
+        .portal-comunicati-box h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            color: var(--text-foam);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        /* Pulsanti di Navigazione */
         .portal-btn {
             font-family: 'Cinzel', serif;
             background-color: rgba(17, 30, 38, 0.9);
             color: var(--text-foam);
             border: 2px solid var(--text-faded);
-            padding: 0.9rem 1.8rem;
+            padding: 0.9rem 1.2rem;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             border-radius: 4px;
             cursor: pointer;
             letter-spacing: 2px;
@@ -197,7 +255,8 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             text-align: center;
-            min-width: 200px;
+            width: 100%;
+            max-width: 250px;
         }
 
         .portal-btn:hover {
@@ -206,54 +265,6 @@
             border-color: var(--text-foam);
             box-shadow: 0 0 20px rgba(138, 160, 179, 0.5);
             transform: translateY(-3px);
-        }
-
-        /* Testo dinamico con effetto dissolvenza */
-        .dynamic-text {
-            font-family: 'Cinzel', serif;
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: var(--text-foam);
-            letter-spacing: 3px;
-            text-shadow: 0 0 15px rgba(138, 160, 179, 0.4);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transform: translateY(4px);
-            opacity: 1;
-            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
-        }
-
-        .cursor {
-            display: inline-block;
-            background-color: var(--text-foam);
-            width: 3px;
-            height: 2rem;
-            margin-left: 4px;
-            animation: blink 0.8s infinite;
-            vertical-align: middle;
-        }
-
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-
-        .fade-out {
-            opacity: 0;
-            transform: scale(0.95);
-        }
-
-        .pulse-effect {
-            animation: doublePulse 5s ease-in-out infinite;
-        }
-
-        @keyframes doublePulse {
-            0%, 100% { transform: scale(1); }
-            20% { transform: scale(1.08); }
-            40% { transform: scale(1); }
-            60% { transform: scale(1.08); }
-            80% { transform: scale(1); }
         }
 
         /* Pannello Riservato SysAdmin */
@@ -315,15 +326,32 @@
             background-color: #070e12;
         }
 
-        @media (max-width: 768px) {
-            .header-logo-cappello { height: 100px; }
-            .header-logo-scritta { height: 50px; }
-            .portal-content-box { height: 130px; }
-            .dynamic-text { font-size: 1.5rem; }
-            .cursor { height: 1.4rem; }
-            .portal-nav-buttons { gap: 1rem; }
-            .portal-btn { width: 100%; min-width: unset; }
-            .admin-control-panel { bottom: 10px; right: 10px; padding: 0.6rem; }
+        @media (max-width: 968px) {
+            .audio-container {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-top: 1rem;
+                display: flex;
+                justify-content: center;
+            }
+            .audio-container audio {
+                width: 100%;
+                max-width: 300px;
+            }
+            .hero-section {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .nav-column {
+                align-items: center !important;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .portal-btn {
+                max-width: 220px;
+            }
         }
     </style>
 </head>
@@ -342,28 +370,105 @@
                 <img src="Logo Scritta.png" alt="ABSIDIA" class="header-logo-scritta">
             </div>
         </div>
-    </header>
-
-    <main>
-        <!-- Box con le scritte dinamiche -->
-        <div class="portal-content-box">
-            <div class="dynamic-text" id="animatedText"><span id="textContent"></span><span class="cursor" id="cursorSpan"></span></div>
-        </div>
-
-        <!-- Player Audio centrale senza bordo con ID dedicato -->
+        <!-- Player Audio in alto a destra -->
         <div class="audio-container">
             <audio id="bgAudio" controls loop>
                 <source src="audio portale.mpeg" type="audio/mpeg">
                 Il tuo browser non supporta l'elemento audio.
             </audio>
         </div>
+    </header>
 
-        <!-- Pulsanti per accedere alle sezioni -->
-        <div class="portal-nav-buttons">
-            <a href="codex.html" class="portal-btn">CODEX<br><span style="font-size: 0.75rem; font-weight: normal; letter-spacing: 1px;">I MANUALI</span></a>
-            <a href="terre_unite.html" class="portal-btn">ELAYA<br><span style="font-size: 0.75rem; font-weight: normal; letter-spacing: 1px;">LE TERRE UNITE</span></a>
-            <a href="absidia.html" class="portal-btn">ABSIDIA<br><span style="font-size: 0.75rem; font-weight: normal; letter-spacing: 1px;">IL NUOVO MONDO</span></a>
-            <a href="login.html" class="portal-btn">AREA PERSONALE<br><span style="font-size: 0.75rem; font-weight: normal; letter-spacing: 1px;">SCHEDA P.G.</span></a>
+    <main>
+        <!-- Sezione Hero: Pulsanti ai lati del Banner Centrale -->
+        <div class="hero-section">
+            <!-- Colonna Pulsanti Sinistra -->
+            <div class="nav-column left">
+                <a href="codex.html" class="portal-btn">CODEX<br><span style="font-size: 0.75rem; font-weight: normal; letter-spacing: 1px;">I MANUALI</span></a>
+                <a href="absidia.html" class="portal-btn">ABSIDIA<br><span style="font-size: 0.75rem; font-weight: normal; letter-spacing: 1px;">IL NUOVO MONDO</span></a>
+            </div>
+
+            <!-- Banner Centrale Adattivo -->
+            <div class="portal-content-box">
+                <h1>ABSIDIA . ATTO I: "EEH! TANTI AUGURI!"</h1>
+                <p>24/25 OTTOBRE 2026</p>
+                <p>SAN PIER NICETO – "VILLA NASTASI" (ME)</p>
+                <div class="sub-info">INFO E COMUNICATI</div>
+            </div>
+
+            <!-- Colonna Pulsanti Destra -->
+            <div class="nav-column right">
+                <a href="terre_unite.html" class="portal-btn">ELAYA<br><span style="font-size: 0.75rem; font-weight: normal; letter-spacing: 1px;">LE TERRE UNITE</span></a>
+                <a href="login.html" class="portal-btn">AREA PERSONALE<br><span style="font-size: 0.75rem; font-weight: normal; letter-spacing: 1px;">SCHEDA P.G.</span></a>
+            </div>
+        </div>
+
+        <!-- Box Comunicati Centrato -->
+        <div class="portal-comunicati-box">
+            <h2>COMUNICATI</h2>
+
+            <h3>PER I PERSONAGGI PROVENIENTI DA ELAYA</h3>
+            Il cammino senza ritorno
+
+            Ricordate l'editto! Le parole di Talor, quel chierico un tempo venerato e ora corrotto, risuonano ancora come una condanna scolpita nella pietra: l'esilio. Vi ha cacciati dalle terre di Elaya, brandendo un potere che ha piegato la realtà stessa.
+            Non eravate soli a percorrere la via dell'abbandono. A scortarvi lungo i sentieri impervi dei monti dell'Aquila c'erano loro: muti, inesorabili, perfetti nella loro furia bellica. Guerrieri celesti, umanoidi dalla pelle argentea e dalle vesti che sfidavano ogni foggia conosciuta, quasi appartenenti a un futuro impossibile. Non parlavano. Marciavano soltanto, e voi con loro, spinti da una volontà che non era la vostra.
+            Quella che doveva essere una marcia di esilio si è trasformata, passo dopo passo, in un incubo geometrico. Il cammino è diventato un circuito ossessivo. Avete iniziato a riconoscere le stesse rocce, gli stessi sassi, i medesimi profili delle montagne, come se steste calpestando lo stesso metro di terra all'infinito, intrappolati in una ruota che gira senza sosta.
+            Poi, il mondo ha cominciato a sfaldarsi.
+            L'aria si è fatta densa, inconsistente, simile a un velo di fumo bagnato. Attorno a voi, la roccia e il cielo hanno ceduto il passo a un vuoto opprimente e innaturale, una distesa infinita e grigia, sospesa in un silenzio tombale che ricorda le peggiori visioni di un piano alieno e dimenticato da Dio. Lì, il tempo ha smesso di scorrere. Gli orologi mentali si sono fermati.
+            In quel limbo immobile, la carne ha iniziato a perdere i suoi confini. Avete sentito le vostre dita, poi le braccia, e infine il busto, dissolversi lentamente, fondendosi con la nebbia e il nulla circostante. Siete scivolati in uno stato di non-coscienza, un sonno perenne da cui non ci si risveglia, dove la percezione del proprio io si è sbriciolata. Ad oggi siete ancora lì, intrappolati in questo ignoto assoluto, sospesi sul ciglio tra l'essere e il non essere, incapaci di capire se i vostri corpi stiano riposando o se siate semplicemente morti senza l'onore di una tomba.
+
+            <h3>PER I PERSONAGGI PROVENIENTI DA ABSIDIA</h3>
+            La verità delle stelle
+
+            Le stelle non mentono mai, anche se i vecchi occhi che le osservano tremano e la mente, per un breve, imperdonabile istante, vacilla!
+            Ho visto un frammento di tempo puro. Ho visto il cielo tingersi di un viola innaturale, i confini del mondo farsi sottili come carta velina e una chiamata urgente risuonare nell'etere per anime che il destino ha legato a doppio filo.
+            Tuttavia, il destino possiede una sua stravagante ironia, e io, benché reputato folle dai più saggi e saggio dai più folli, mi rifiuto di credere che le costellazioni abbiano sprecato la loro luce per un sogno vano!
+            Se le stelle non possono scegliere il volto, permetteremo che sia il passo di un viandante a dimostrarlo.
+            Questo invito non è giunto a voi per caso!
+            Che siate principi o mendicanti, studiosi di arti o semplici cercatori di verità, se nel profondo del vostro petto avete sentito una strana inquietudine, un richiamo inspiegabile verso l'ignoto, allora questo messaggio vi appartiene!!!
+            Fatevi trovare il giorno 24 del mese di Ottobrus esattamente di prima sera nei pressi del "Gran Bazar di Melanio", nell'isola di Malapietra. Non cercate risposte prima di essere arrivati!
+            Venite con la mente aperta! E il coraggio ben saldo!
+            Il tempo stringe! Massima allerta! Eh! Tanti auguri!
+
+            Lucio degli Ardi
+
+            ATTO I: "EEH! TANTI AUGURI!"
+
+            24/25 OTTOBRE 2026
+            SAN PIER NICETO – "VILLA NASTASI" (ME)
+
+            GIORNO 24
+            OPENING ORE: 11:00
+            TIME IN ORE: 15:00
+            TIME OUT PROGRESSIVO ORE: 02:00
+
+            GIORNO 25
+            TIME IN ORE: 11:00
+            TIME OUT ORE: 16:00
+
+            LOCATION 
+
+            "VILLA NASTASI" – SAN PIER NICETO (ME)
+            SERVIZI IGIENICI: SI
+            SPAZIO TENDA: SI
+            PARCHEGGIO: SI
+            ILLUMINAZIONE ELETTRICA: IN ALCUNE AREE
+            ACQUA POTABILE: NO
+            ACQUA CALDA: NO
+            POSTI LETTO: NO
+            CUCINA: AREE ATTREZZATE (OFF GAME)
+
+            LA QUOTA DI PARTECIPAZIONE PER LA COPERTURA SPESE ED ORGANIZZAZIONE E' DI 40 € DA VERSARE ENTRO E NON OLTRE IL GIORNO 20/10/2026. 
+            NON SARANNO AMMESSE ISCRIZIONI AL GATE. 
+            DOVE EFFETTUARE IL VERSAMENTO: 
+            CONTO CORRENTE REVOLUT
+            IBAN: IT93K0366901600974148273820 
+            INTESTATO A: MARCELLO GIACOBBE
+            CAUSALE: (NOME COGNOME GIOCATORE)
+
+            PER UN MIGLIOR RISCONTRO SI PREGA DI DARCI CONFERMA DELL'AVVENUTO PAGAMENTO TRAMITE SCREENSHOT O FOTO DELLA RICEVUTA ALL'INDIRIZZO E-MAIL ELAYASTAFF@GMAIL.COM
+
+            "BUON LIVE A TUTTI! E DIMENTICAVO... TANTI AUGURI!"
         </div>
     </main>
 
@@ -421,60 +526,6 @@
                 });
             }
         });
-
-        // --- Logica Animazione Testo ---
-        const textContainer = document.getElementById('textContent');
-        const cursorSpan = document.getElementById('cursorSpan');
-        const wrapperElement = document.getElementById('animatedText');
-
-        const comingSoonText = "COMING SOON...";
-        const dateText = "24 E 25 OTTOBRE";
-
-        let state = 0;
-
-        function typeWriter(text, i, callback) {
-            if (i < text.length) {
-                textContainer.textContent += text.charAt(i);
-                setTimeout(() => typeWriter(text, i + 1, callback), 120);
-            } else if (callback) {
-                callback();
-            }
-        }
-
-        function runCycle() {
-            if (state === 0) {
-                wrapperElement.classList.remove('pulse-effect');
-                cursorSpan.style.display = "inline-block";
-                textContainer.textContent = "";
-                
-                typeWriter(comingSoonText, 0, () => {
-                    setTimeout(() => {
-                        wrapperElement.classList.add('fade-out');
-                        setTimeout(() => {
-                            state = 1;
-                            wrapperElement.classList.remove('fade-out');
-                            runCycle();
-                        }, 800);
-                    }, 3000);
-                });
-
-            } else {
-                cursorSpan.style.display = "none";
-                textContainer.textContent = dateText;
-                wrapperElement.classList.add('pulse-effect');
-
-                setTimeout(() => {
-                    wrapperElement.classList.add('fade-out');
-                    setTimeout(() => {
-                        state = 0;
-                        wrapperElement.classList.remove('fade-out');
-                        runCycle();
-                    }, 800);
-                }, 5000);
-            }
-        }
-
-        runCycle();
     </script>
 
 </body>
