@@ -1197,7 +1197,7 @@ canalizzazioni: {
             if (!conferma) return;
 
             const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.href,
+                redirectTo: 'https://ciccioprogect.github.io/Absidia/aggiorna-password.html',
             });
             
             if (error) {
