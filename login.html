@@ -1726,6 +1726,37 @@
             if (livAlchimia >= 3) { slotAlchimia.comuni += 1; slotAlchimia.nonComuni += 1; slotAlchimia.rari += 2; }
             if (livAlchimia >= 4) { slotAlchimia.comuni += 1; slotAlchimia.nonComuni += 1; slotAlchimia.rari += 1; slotAlchimia.leggendari += 2; }
 
+            for (let i = 1; i <= livPotenzaMagica; i++) {
+                let ciclo = ((i - 1) % 4) + 1;
+                if (ciclo === 1) cmComuni += 1;
+                else if (ciclo === 2) { cmComuni += 1; cmNonComuni += 1; }
+                else if (ciclo === 3) { cmComuni += 1; cmNonComuni += 1; cmRari += 1; }
+                else if (ciclo === 4) { cmComuni += 1; cmNonComuni += 1; cmRari += 1; cmLeggendari += 1; }
+            }
+
+            for (let i = 1; i <= livSapienzaMagica; i++) {
+                let ciclo = ((i - 1) % 4) + 1;
+                let targetSlot = null;
+                if (livMagiaArcana > 0 || livStregoneria > 0) targetSlot = slotIncantesimi;
+                else if (livMagiaDivina > 0 || livGuardiaDivina > 0) targetSlot = slotMiracoli;
+                else if (livMagiaDruidica > 0 || livGuardianoNatura > 0) targetSlot = slotEvocazioni;
+                else if (livMagiaMistica > 0) targetSlot = slotCanalizzazioni;
+
+                if (ciclo === 1) {
+                    cmComuni += 1;
+                    if (targetSlot) targetSlot.comuni += 1;
+                } else if (ciclo === 2) {
+                    cmComuni += 1; cmNonComuni += 1;
+                    if (targetSlot) { targetSlot.comuni += 1; targetSlot.nonComuni += 1; }
+                } else if (ciclo === 3) {
+                    cmComuni += 1; cmNonComuni += 1; cmRari += 1;
+                    if (targetSlot) { targetSlot.comuni += 1; targetSlot.nonComuni += 1; targetSlot.rari += 1; }
+                } else if (ciclo === 4) {
+                    cmComuni += 1; cmNonComuni += 1; cmRari += 1; cmLeggendari += 1;
+                    if (targetSlot) { targetSlot.comuni += 1; targetSlot.nonComuni += 1; targetSlot.rari += 1; targetSlot.leggendari += 1; }
+                }
+            }
+
             document.getElementById('gen-cm-comuni').value = cmComuni;
             document.getElementById('gen-cm-non-comuni').value = cmNonComuni;
             document.getElementById('gen-cm-rari').value = cmRari;
@@ -1745,14 +1776,19 @@
 
         function prerequisitiSoddisfatti(ab) {
             let abNameUpper = ab.name.toUpperCase();
+            
             if (abNameUpper === "SAPIENZA MAGICA") {
-                const nomiPrerequisitiOR = ["MAGIA ARCANA", "MAGIA DIVINA", "MAGIA DRUIDICA", "GUARDIA DIVINA", "STREGONERIA", "GUARDIANO DELLA NATURA", "MAGIA MISTICA"];
+                const nomiPrerequisitiOR = [
+                    "MAGIA ARCANA", "MAGIA DIVINA", "MAGIA DRUIDICA", 
+                    "GUARDIA DIVINA", "STREGONERIA", "GUARDIANO DELLA NATURA", "MAGIA MISTICA"
+                ];
                 for (let nomePrereq of nomiPrerequisitiOR) {
                     let idPrereq = allAbilitiesList.find(x => x.name.toUpperCase() === nomePrereq)?.id;
                     if (idPrereq && (userAbilities[idPrereq] || 0) >= 1) return true;
                 }
                 return false;
             }
+
             if (abNameUpper === "GUARDIANO DELLA NATURA") {
                 let idArcieria = allAbilitiesList.find(x => x.name.toUpperCase() === "ARCIERIA")?.id;
                 let idMaestroLame = allAbilitiesList.find(x => x.name.toUpperCase() === "MAESTRO DI LAME")?.id;
