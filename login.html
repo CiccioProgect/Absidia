@@ -662,14 +662,14 @@
                         </div>
                     </div>
 
-                    <div class="section-header" style="margin-top: 1rem;">
-                        <span class="section-title" style="font-size: 1rem;">Comandi Globali</span>
-                    </div>
-                    <div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <button class="portal-btn alt" style="margin-top:0;" onclick="accreditaPezziGlobali(1)">+1 PE a Tutti</button>
-                        <button class="portal-btn alt" style="margin-top:0;" onclick="accreditaPezziGlobali(5)">+5 PE a Tutti</button>
-                        <button class="portal-btn" style="margin-top:0;" onclick="creaNuovaSchedaMaster()">Crea Scheda Ex Novo</button>
-                    </div>
+                   <div class="section-header" style="margin-top: 1rem;">
+    <span class="section-title" style="font-size: 1rem;">Comandi Globali</span>
+</div>
+<div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <button class="portal-btn alt" style="margin-top:0; flex: 1;" onclick="accreditaPezziGlobaliManuale()">+ PE a Tutti (Manuale)</button>
+    <button class="portal-btn alt" style="margin-top:0; flex: 1;" onclick="esportaBackgroundWord()">📄 Esporta Tutti i Background in Word</button>
+    <button class="portal-btn" style="margin-top:0; width: 100%;" onclick="creaNuovaSchedaMaster()">Crea Scheda Ex Novo</button>
+</div>
 
                     <button class="portal-btn danger" style="margin-top: 1rem;" onclick="signOut()">Esci dal Portale</button>
                 </div>
@@ -944,7 +944,11 @@
     <div id="master-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 11, 15, 0.92); z-index: 900; overflow-y: auto; padding: 2rem 1rem;">
         <div style="max-width: 900px; margin: auto; background-color: rgba(17, 30, 38, 0.98); border: 2px solid var(--border-accent); border-radius: 8px; padding: 2rem; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.9);">
             
-            <button class="portal-btn danger" style="position: absolute; top: 1.5rem; right: 1.5rem; width: auto; padding: 0.4rem 1rem; margin-top: 0;" onclick="chiudiModalMaster()">✖ Chiudi Scheda</button>
+            <!-- Tasto in alto a sinistra per Master (Aggiorna / Salva) -->
+<button id="btn-master-toggle-edit" class="portal-btn alt" style="position: absolute; top: 1.5rem; left: 1.5rem; width: auto; padding: 0.4rem 1.2rem; margin-top: 0;" onclick="toggleEditMasterModal()">✏️ Aggiorna Scheda</button>
+
+<!-- Tasto in alto a destra per Chiudere -->
+<button class="portal-btn danger" style="position: absolute; top: 1.5rem; right: 1.5rem; width: auto; padding: 0.4rem 1rem; margin-top: 0;" onclick="chiudiModalMaster()">✖ Chiudi Scheda</button>
             
             <h2 id="modal-titolo-pg" style="font-family: 'Cinzel', serif; color: var(--text-foam); font-size: 1.4rem; margin-bottom: 1rem; text-align: center;">Scheda Personaggio</h2>
 
@@ -1249,46 +1253,69 @@
 
         async function caricaDatiSchedaModale(userId) {
             const profileSection = document.getElementById('profile-section');
-            const actionsSidebar = document.getElementById('actions-sidebar');
             const modalContainer = document.getElementById('master-modal-content-container');
             
             profileSection.style.display = 'block';
-            if (actionsSidebar) actionsSidebar.style.display = 'block';
-            
+                        
             const btnTorna = document.getElementById('btn-torna-master');
             if (btnTorna) btnTorna.style.display = 'none';
 
             modalContainer.appendChild(profileSection);
-            if (actionsSidebar) modalContainer.appendChild(actionsSidebar);
 
-            await caricaDatiScheda(userId);
+    // Inizializza la scheda in modalità lettura
+    editModeActive = false;
+    await caricaDatiScheda(userId);
 
-            if (isMaster) {
-                editModeActive = true;
-                bloccaTuttiCampi(false);
-                document.querySelectorAll('.ability-controls button').forEach(btn => btn.disabled = false);
-                const btnSalva = document.getElementById('btn-salva');
-                if (btnSalva) btnSalva.disabled = false;
-            }
+    const btnToggle = document.getElementById('btn-master-toggle-edit');
+    if (btnToggle) {
+        btnToggle.innerText = '✏️ Aggiorna Scheda';
+        btnToggle.classList.add('alt');
+    }
+}
+
+window.toggleEditMasterModal = async function() {
+    const btnToggle = document.getElementById('btn-master-toggle-edit');
+    if (!editModeActive) {
+        // Passa alla modalità modifica
+        editModeActive = true;
+        bloccaTuttiCampi(false);
+        if (btnToggle) {
+            btnToggle.innerText = '💾 Salva Scheda';
+            btnToggle.classList.remove('alt');
         }
+    } else {
+        // Salva le modifiche e torna alla modalità lettura
+        await salvaScheda();
+        editModeActive = false;
+        if (btnToggle) {
+            btnToggle.innerText = '✏️ Aggiorna Scheda';
+            btnToggle.classList.add('alt');
+        }
+    }
+};
+       
+window.chiudiModalMaster = function() {
+    document.getElementById('master-modal-overlay').style.display = 'none';
+    targetUserIdMaster = null;
+    editModeActive = false;
+    
+    const portalLayout = document.querySelector('.portal-layout');
+    const profileSection = document.getElementById('profile-section');
+    const actionsSidebar = document.getElementById('actions-sidebar');
+    
+    profileSection.style.display = 'none';
+    if (actionsSidebar) actionsSidebar.style.display = 'none';
+    
+    if (portalLayout && profileSection) {
+        if (actionsSidebar) {
+            portalLayout.insertBefore(profileSection, actionsSidebar);
+        } else {
+            portalLayout.appendChild(profileSection);
+        }
+    }
 
-        window.chiudiModalMaster = function() {
-            document.getElementById('master-modal-overlay').style.display = 'none';
-            targetUserIdMaster = null;
-            
-            const portalLayout = document.querySelector('.portal-layout');
-            const profileSection = document.getElementById('profile-section');
-            const actionsSidebar = document.getElementById('actions-sidebar');
-            
-            profileSection.style.display = 'none';
-            if (actionsSidebar) actionsSidebar.style.display = 'none';
-            
-            if (portalLayout && profileSection && actionsSidebar) {
-                portalLayout.insertBefore(profileSection, actionsSidebar);
-            }
-
-            caricaListaSchedeMaster();
-        };
+    caricaListaSchedeMaster();
+};
 
         window.accreditaPEMasterSelezionato = function() {
             let userId = document.getElementById('master-select-scheda').value;
@@ -1387,17 +1414,97 @@
             caricaListaSchedeMaster();
         };
 
-        window.accreditaPezziGlobali = async function(val) {
-            if (!confirm(`Vuoi accreditare ${val} PE a tutti i giocatori?`)) return;
-            const { data: personaggi } = await supabaseClient.from('personaggi').select('user_id, punti_esperienza');
-            if (!personaggi) return;
+      window.accreditaPezziGlobaliManuale = async function() {
+    let inputVal = prompt("Quanti Punti Esperienza (PE) vuoi accreditare a tutti i giocatori?", "1");
+    if (inputVal === null || inputVal.trim() === "") return;
+    let val = parseInt(inputVal);
+    if (isNaN(val)) {
+        mostraPopup("Errore", "Inserisci un numero valido.");
+        return;
+    }
 
-            for (let p of personaggi) {
-                await supabaseClient.from('personaggi').update({ punti_esperienza: (p.punti_esperienza || 0) + val }).eq('user_id', p.user_id);
-            }
-            mostraPopup("Successo", "PE accreditati a tutti!");
-            caricaListaSchedeMaster();
-        };
+    if (!confirm(`Confermi di voler accreditare ${val} PE a tutti i giocatori?`)) return;
+
+    const { data: personaggi } = await supabaseClient.from('personaggi').select('user_id, punti_esperienza');
+    if (!personaggi) return;
+
+    for (let p of personaggi) {
+        let peAttuali = p.punti_esperienza || 0;
+        await supabaseClient.from('personaggi').update({ punti_esperienza: peAttuali + val }).eq('user_id', p.user_id);
+    }
+    
+    mostraPopup("Successo", `Accreditati con successo ${val} PE a tutti i giocatori!`);
+    caricaListaSchedeMaster();
+};
+
+window.esportaBackgroundWord = async function() {
+    const { data: personaggi, error } = await supabaseClient
+        .from('personaggi')
+        .select('nome_giocatore, nome_personaggio, email, user_id, background')
+        .order('nome_personaggio', { ascending: true });
+
+    if (error || !personaggi) {
+        mostraPopup("Errore", "Impossibile recuperare i background dal database.");
+        return;
+    }
+
+    let conBackground = personaggi.filter(p => p.background && p.background.trim() !== '');
+
+    if (conBackground.length === 0) {
+        mostraPopup("Attenzione", "Nessun background inserito dai giocatori al momento.");
+        return;
+    }
+
+    let htmlContent = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+            <meta charset="utf-8">
+            <title>Background Personaggi - Absidia</title>
+            <style>
+                body { font-family: 'Times New Roman', serif; font-size: 12pt; color: #000000; line-height: 1.5; margin: 2cm; }
+                h1 { text-align: center; font-family: Arial, sans-serif; color: #111e26; font-size: 18pt; margin-bottom: 20px; }
+                .bg-block { margin-bottom: 30px; page-break-inside: avoid; border-bottom: 1px solid #cccccc; padding-bottom: 20px; }
+                .meta-info { font-family: Arial, sans-serif; font-size: 10.5pt; color: #444444; background-color: #f2f5f8; padding: 8px; margin-bottom: 10px; }
+                .meta-info strong { color: #000000; }
+                .bg-text { text-align: justify; white-space: pre-wrap; font-style: italic; }
+            </style>
+        </head>
+        <body>
+            <h1>Raccolta Background Ufficiali - Absidia</h1>
+    `;
+
+    conBackground.forEach((p, index) => {
+        let nomeGioc = p.nome_giocatore || 'Non specificato';
+        let nomePg = p.nome_personaggio || 'Senza Nome';
+        let emailGioc = p.email || p.user_id;
+        let testoBg = p.background;
+
+        htmlContent += `
+            <div class="bg-block">
+                <div class="meta-info">
+                    <strong>#${index + 1} | Personaggio:</strong> ${nomePg}<br>
+                    <strong>Giocatore:</strong> ${nomeGioc} (${emailGioc})
+                </div>
+                <div class="bg-text">${testoBg}</div>
+            </div>
+        `;
+    });
+
+    htmlContent += `</body></html>`;
+
+    const blob = new Blob(['\ufeff' + htmlContent], {
+        type: 'application/msword'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Background_Absidia_${new Date().toISOString().slice(0, 10)}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+};	
 
         window.salvaScheda = async function() {
             let userId = getActiveUserId();
@@ -1451,51 +1558,50 @@
         };
 
         async function caricaDatiScheda(userId) {
-            let { data: personaggio } = await supabaseClient.from('personaggi').select('*').eq('user_id', userId).maybeSingle();
+    let { data: personaggio } = await supabaseClient.from('personaggi').select('*').eq('user_id', userId).maybeSingle();
 
-            if (!personaggio) {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                const { data: nuovoPezzo } = await supabaseClient.from('personaggi').upsert([{ 
-                    user_id: userId, email: session ? session.user.email : null,
-                    punti_creazione: 25, punti_esperienza: 0, punti_ferita: 3, cartellini_volonta: 0, 
-                    scheda_salvata: false, magie_selezionate: {}
-                }], { onConflict: 'user_id' }).select().maybeSingle();
-                personaggio = nuovoPezzo;
-            }
+    if (!personaggio) {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const { data: nuovoPezzo } = await supabaseClient.from('personaggi').upsert([{ 
+            user_id: userId, email: session ? session.user.email : null,
+            punti_creazione: 25, punti_esperienza: 0, punti_ferita: 3, cartellini_volonta: 0, 
+            scheda_salvata: false, magie_selezionate: {}
+        }], { onConflict: 'user_id' }).select().maybeSingle();
+        personaggio = nuovoPezzo;
+    }
 
-            userMagieSelezionate = (personaggio && personaggio.magie_selezionate) ? personaggio.magie_selezionate : {};
-            schedaSalvataInDb = personaggio ? personaggio.scheda_salvata : false;
-            editModeActive = isMaster ? true : false;
+    userMagieSelezionate = (personaggio && personaggio.magie_selezionate) ? personaggio.magie_selezionate : {};
+    schedaSalvataInDb = personaggio ? personaggio.scheda_salvata : false;
+    
+    // RIMOSSO: editModeActive = isMaster ? true : false;
+    // La scheda parte SEMPRE bloccata finché non si preme "Aggiorna Scheda"
+    if (!editModeActive) {
+        bloccaTuttiCampi(true);
+    }
 
-            document.getElementById('gen-giocatore').value = personaggio?.nome_giocatore || '';
-            document.getElementById('user-email').value = personaggio?.email || personaggio?.user_id || '';
-            document.getElementById('gen-personaggio').value = personaggio?.nome_personaggio || '';
-            document.getElementById('gen-razza').value = personaggio?.razza || 'Umano';
-            document.getElementById('gen-religione').value = personaggio?.religione || '';
-            document.getElementById('gen-eta').value = personaggio?.eta || '';
-            document.getElementById('gen-provenienza-regione').value = personaggio?.provenienza_regione || '';
-            document.getElementById('gen-provenienza-libera').value = personaggio?.provenienza_libera || '';
-            
-            initialPe = personaggio?.punti_esperienza ?? 0;
-            document.getElementById('gen-pe').value = initialPe;
-            document.getElementById('txt-inventario').value = personaggio?.inventario || '';
-            document.getElementById('txt-diario').value = personaggio?.diario || '';
-            document.getElementById('txt-background').value = personaggio?.background || '';
+    document.getElementById('gen-giocatore').value = personaggio?.nome_giocatore || '';
+    document.getElementById('user-email').value = personaggio?.email || personaggio?.user_id || '';
+    document.getElementById('gen-personaggio').value = personaggio?.nome_personaggio || '';
+    document.getElementById('gen-razza').value = personaggio?.razza || 'Umano';
+    document.getElementById('gen-religione').value = personaggio?.religione || '';
+    document.getElementById('gen-eta').value = personaggio?.eta || '';
+    document.getElementById('gen-provenienza-regione').value = personaggio?.provenienza_regione || '';
+    document.getElementById('gen-provenienza-libera').value = personaggio?.provenienza_libera || '';
+    
+    initialPe = personaggio?.punti_esperienza ?? 0;
+    document.getElementById('gen-pe').value = initialPe;
+    document.getElementById('txt-inventario').value = personaggio?.inventario || '';
+    document.getElementById('txt-diario').value = personaggio?.diario || '';
+    document.getElementById('txt-background').value = personaggio?.background || '';
 
-            if (isMaster) {
-                bloccaTuttiCampi(false);
-                document.getElementById('btn-salva').disabled = false;
-                document.getElementById('btn-crea').disabled = true;
-                document.getElementById('btn-aggiorna').disabled = true;
-            } else {
-                bloccaTuttiCampi(true);
-                document.getElementById('btn-salva').disabled = true;
-                document.getElementById('btn-crea').disabled = schedaSalvataInDb;
-                document.getElementById('btn-aggiorna').disabled = !schedaSalvataInDb;
-            }
+    if (!isMaster) {
+        document.getElementById('btn-salva').disabled = true;
+        document.getElementById('btn-crea').disabled = schedaSalvataInDb;
+        document.getElementById('btn-aggiorna').disabled = !schedaSalvataInDb;
+    }
 
-            await caricaAbilita(userId);
-        }
+    await caricaAbilita(userId);
+}
 
         function bloccaTuttiCampi(bloccato) {
             const campi = document.querySelectorAll('#profile-section input:not(#user-email):not(#gen-pf):not(#gen-volonta):not(#gen-cm-comuni):not(#gen-cm-non-comuni):not(#gen-cm-rari):not(#gen-cm-leggendari), #profile-section select, #profile-section textarea');
