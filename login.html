@@ -569,20 +569,25 @@
             }
         }
 
-        @media(max-width: 768px) {
-            .grid-2 { grid-template-columns: 1fr; }
-            .magic-columns { grid-template-columns: 1fr 1fr; }
-            .audio-container { position: relative; top: auto; right: auto; margin-top: 0.5rem; }
-        }
+        @media (max-width: 768px) {
+    /* Layout generale mobile */
+    .grid-2 { 
+        grid-template-columns: 1fr !important; 
+    }
+    
+    .audio-container { 
+        position: relative !important; 
+        top: auto !important; 
+        right: auto !important; 
+        margin-top: 0.5rem !important; 
+    }
 
-/* --- CORREZIONI MOBILE --- */
-@media (max-width: 768px) {
-    /* 1. Previene lo zoom forzato su iPhone/Safari negli input */
+    /* Impedisce lo zoom forzato sui campi di input in iOS/Android */
     input, select, textarea {
         font-size: 16px !important;
     }
 
-    /* 2. Menu a schede con scroll orizzontale invece che a capo */
+    /* Tab orizzontali scorrevoli */
     .sheet-nav-tabs {
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
@@ -598,14 +603,30 @@
         font-size: 0.85rem;
     }
 
-    /* 3. Ingrandimento dei tasti + e - delle abilità per il Touch */
+    /* Griglia abilità a colonna singola su mobile */
+    .abilities-grid {
+        grid-template-columns: 1fr !important;
+        justify-items: stretch;
+    }
+
+    .ability-item {
+        max-width: 100% !important;
+    }
+
+    /* Le 4 colonne delle magie diventano a colonna unica su cellulare */
+    .magic-columns {
+        grid-template-columns: 1fr !important;
+        max-height: none !important;
+    }
+
+    /* Pulsanti ingranditi per comodità touch */
     .ability-controls button {
         width: 38px !important;
         height: 38px !important;
         font-size: 1.2rem !important;
     }
 
-    /* 4. Layout modale Master ottimizzato per mobile */
+    /* Modale Master adattato a mobile */
     #master-modal-overlay {
         padding: 0.5rem !important;
     }
@@ -627,7 +648,7 @@
         margin-bottom: 1rem !important;
     }
 
-    /* 5. Aggiustamento header su schermi piccoli */
+    /* Link torna al portale nell'header */
     .back-link {
         position: static !important;
         display: block !important;
@@ -2053,44 +2074,71 @@ window.esportaBackgroundWord = async function() {
             return tuttiSoddisfatti ? "Prerequisiti soddisfatti" : "Prerequisiti: " + descrizioni.join(", ");
         }
 
-        function renderAbilitaUI() {
-            const container = document.getElementById('abilita-container');
-            if (!allAbilitiesList.length) {
-                container.innerHTML = '<p style="color: var(--text-faded); font-style: italic;">Nessuna abilità trovata.</p>';
-                return;
-            }
+       // Gestione del click per aprire/chiudere il popup dei prerequisiti da mobile/PC
+window.togglePopupAbilita = function(abId, event) {
+    event.stopPropagation();
+    const popup = document.getElementById(`popup-${abId}`);
+    if (!popup) return;
 
-            let html = '<div class="abilities-grid">';
-            allAbilitiesList.forEach(ab => {
-                let currentLevel = userAbilities[ab.id] || 0;
-                let eRipetibile = abilitaRipetibili.map(r => r.toUpperCase()).includes(ab.name.toUpperCase());                
-                let testoLivello = `Liv. ${currentLevel}`;
-                if (eRipetibile && currentLevel > 4) {
-                    let livelloEffettivo = ((currentLevel - 1) % 4) + 1;
-                    testoLivello = `Liv. ${currentLevel} (Eff. ${livelloEffettivo})`;
-                } else if (!eRipetibile) {
-                    testoLivello += `/${ab.max_level || 4}`;
-                }
+    // Chiude eventuali altri popup aperti nella pagina
+    document.querySelectorAll('.ability-popup').forEach(p => {
+        if (p.id !== `popup-${abId}`) p.style.display = 'none';
+    });
 
-                let disabledAttr = (!editModeActive && !isMaster) ? 'disabled' : '';
-                let statusClass = currentLevel > 0 ? 'active' : (prerequisitiSoddisfatti(ab) ? 'available' : 'inactive');
+    // Inverte lo stato del popup selezionato
+    if (popup.style.display === 'block') {
+        popup.style.display = 'none';
+    } else {
+        popup.style.display = 'block';
+    }
+};
 
-                html += `
-                    <div class="ability-item ${statusClass}" onmouseenter="avviaTimerPopup(this, ${ab.id})" onmouseleave="chiudiPopup(this)">
-                        <div class="ability-info">
-                            <div class="ability-name">${ab.name} (<span id="lvl-${ab.id}">${testoLivello}</span>)</div>
-                        </div>
-                        <div class="ability-controls">
-                            <button onclick="modificaAbilita(${ab.id}, -1)" ${(!editModeActive && !isMaster) || (schedaSalvataInDb && !isMaster && currentLevel <= (userAbilitiesSaved[ab.id] || 0)) ? 'disabled' : ''}>-</button>
-                            <button onclick="modificaAbilita(${ab.id}, 1)" ${disabledAttr}>+</button>
-                        </div>
-                        <div class="ability-popup" id="popup-${ab.id}">${ottieniTestoPrerequisiti(ab)}</div>
-                    </div>
-                `;
-            });
-            html += '</div>';
-            container.innerHTML = html;
+// Chiude i popup se si clicca in un punto qualsiasi fuori dalle abilità
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.ability-item')) {
+        document.querySelectorAll('.ability-popup').forEach(p => p.style.display = 'none');
+    }
+});
+
+// Funzione aggiornata per il rendering grafico delle abilità
+function renderAbilitaUI() {
+    const container = document.getElementById('abilita-container');
+    if (!allAbilitiesList.length) {
+        container.innerHTML = '<p style="color: var(--text-faded); font-style: italic;">Nessuna abilità trovata.</p>';
+        return;
+    }
+
+    let html = '<div class="abilities-grid">';
+    allAbilitiesList.forEach(ab => {
+        let currentLevel = userAbilities[ab.id] || 0;
+        let eRipetibile = abilitaRipetibili.map(r => r.toUpperCase()).includes(ab.name.toUpperCase());                
+        let testoLivello = `Liv. ${currentLevel}`;
+        if (eRipetibile && currentLevel > 4) {
+            let livelloEffettivo = ((currentLevel - 1) % 4) + 1;
+            testoLivello = `Liv. ${currentLevel} (Eff. ${livelloEffettivo})`;
+        } else if (!eRipetibile) {
+            testoLivello += `/${ab.max_level || 4}`;
         }
+
+        let disabledAttr = (!editModeActive && !isMaster) ? 'disabled' : '';
+        let statusClass = currentLevel > 0 ? 'active' : (prerequisitiSoddisfatti(ab) ? 'available' : 'inactive');
+
+        html += `
+            <div class="ability-item ${statusClass}" onclick="togglePopupAbilita(${ab.id}, event)">
+                <div class="ability-info" style="flex-grow: 1; cursor: pointer;">
+                    <div class="ability-name">${ab.name} (<span id="lvl-${ab.id}">${testoLivello}</span>) <span style="font-size:0.75rem; opacity:0.7;">ℹ️</span></div>
+                </div>
+                <div class="ability-controls" onclick="event.stopPropagation()">
+                    <button onclick="modificaAbilita(${ab.id}, -1)" ${(!editModeActive && !isMaster) || (schedaSalvataInDb && !isMaster && currentLevel <= (userAbilitiesSaved[ab.id] || 0)) ? 'disabled' : ''}>-</button>
+                    <button onclick="modificaAbilita(${ab.id}, 1)" ${disabledAttr}>+</button>
+                </div>
+                <div class="ability-popup" id="popup-${ab.id}">${ottieniTestoPrerequisiti(ab)}</div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+}
 
         let popupTimer = null;
         window.avviaTimerPopup = function(elemento, abId) {
