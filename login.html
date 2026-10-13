@@ -1765,7 +1765,8 @@ window.esportaBackgroundWord = async function() {
                 document.getElementById('gen-pe').disabled = true;
                 document.getElementById('gen-pc').disabled = true;
             }
-            document.getElementById('btn-salva').disabled = false;
+            ricalcolaStatisticheDerivate();
+	    document.getElementById('btn-salva').disabled = false;
             document.getElementById('btn-crea').disabled = true;
         };
 
