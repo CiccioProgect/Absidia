@@ -1,4 +1,4 @@
-	<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
@@ -201,6 +201,7 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.7);
             flex-grow: 1;
             max-width: 800px;
+            width: 100%;
         }
 
         .portal-card h2 {
@@ -569,94 +570,138 @@
             }
         }
 
+        /* --- STILI OTTIMIZZATI PER DISPOSITIVI MOBILI --- */
         @media (max-width: 768px) {
-    /* Layout generale mobile */
-    .grid-2 { 
-        grid-template-columns: 1fr !important; 
-    }
-    
-    .audio-container { 
-        position: relative !important; 
-        top: auto !important; 
-        right: auto !important; 
-        margin-top: 0.5rem !important; 
-    }
+            main {
+                width: 100%;
+                padding: 0.5rem;
+                gap: 1rem;
+            }
 
-    /* Impedisce lo zoom forzato sui campi di input in iOS/Android */
-    input, select, textarea {
-        font-size: 16px !important;
-    }
+            .portal-card {
+                padding: 1rem 0.8rem;
+                border-radius: 4px;
+                border-left: none;
+                border-right: none;
+            }
 
-    /* Tab orizzontali scorrevoli */
-    .sheet-nav-tabs {
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-        justify-content: flex-start !important;
-        white-space: nowrap;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 0.6rem;
-    }
+            .portal-card h2 {
+                font-size: 1.25rem;
+            }
 
-    .tab-btn {
-        flex: 0 0 auto;
-        padding: 0.6rem 1rem;
-        font-size: 0.85rem;
-    }
+            .grid-2 { 
+                grid-template-columns: 1fr !important; 
+                gap: 0.4rem;
+            }
+            
+            .audio-container { 
+                position: relative !important; 
+                top: auto !important; 
+                right: auto !important; 
+                margin-top: 0.5rem !important; 
+            }
 
-    /* Griglia abilità a colonna singola su mobile */
-    .abilities-grid {
-        grid-template-columns: 1fr !important;
-        justify-items: stretch;
-    }
+            /* Impedisce lo zoom forzato sui campi di input in iOS/Android e adatta il padding */
+            input, select, textarea {
+                font-size: 16px !important;
+                padding: 0.5rem;
+            }
 
-    .ability-item {
-        max-width: 100% !important;
-    }
+            /* Tab orizzontali scorrevoli e fluide */
+            .sheet-nav-tabs {
+                flex-wrap: nowrap !important;
+                overflow-x: auto !important;
+                justify-content: flex-start !important;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 0.5rem;
+                margin-left: -0.8rem;
+                margin-right: -0.8rem;
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
 
-    /* Le 4 colonne delle magie diventano a colonna unica su cellulare */
-    .magic-columns {
-        grid-template-columns: 1fr !important;
-        max-height: none !important;
-    }
+            .tab-btn {
+                flex: 0 0 auto;
+                padding: 0.5rem 0.8rem;
+                font-size: 0.75rem;
+            }
 
-    /* Pulsanti ingranditi per comodità touch */
-    .ability-controls button {
-        width: 38px !important;
-        height: 38px !important;
-        font-size: 1.2rem !important;
-    }
+            /* Griglia abilità a colonna singola su mobile */
+            .abilities-grid {
+                grid-template-columns: 1fr !important;
+                justify-items: stretch;
+            }
 
-    /* Modale Master adattato a mobile */
-    #master-modal-overlay {
-        padding: 0.5rem !important;
-    }
+            .ability-item {
+                max-width: 100% !important;
+                padding: 0.4rem 0.6rem;
+            }
 
-    #master-modal-overlay > div {
-        padding: 1rem !important;
-        width: 100% !important;
-    }
+            /* Le 4 colonne delle magie diventano a colonna unica su cellulare con distanziamento pulito */
+            .magic-columns {
+                grid-template-columns: 1fr !important;
+                max-height: none !important;
+                gap: 1rem;
+            }
 
-    #btn-master-toggle-edit {
-        position: static !important;
-        width: 100% !important;
-        margin-bottom: 0.5rem !important;
-    }
+            .magic-col {
+                background: rgba(9, 19, 26, 0.5);
+                padding: 0.6rem;
+                border-radius: 4px;
+                border: 1px solid rgba(138, 160, 179, 0.2);
+            }
 
-    #master-modal-overlay button.danger {
-        position: static !important;
-        width: 100% !important;
-        margin-bottom: 1rem !important;
-    }
+            .magic-col h4 {
+                font-size: 0.9rem;
+                border-bottom: 1px solid var(--text-faded);
+                padding-bottom: 0.3rem;
+                margin-bottom: 0.5rem;
+                color: var(--border-accent);
+            }
 
-    /* Link torna al portale nell'header */
-    .back-link {
-        position: static !important;
-        display: block !important;
-        text-align: center;
-        margin-bottom: 0.8rem !important;
-    }
-}
+            /* Pulsanti ingranditi per comodità touch */
+            .ability-controls button {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 1.1rem !important;
+            }
 
+            .portal-btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
+            }
+
+            /* Modale Master adattato a mobile */
+            #master-modal-overlay {
+                padding: 0.3rem !important;
+            }
+
+            #master-modal-overlay > div {
+                padding: 0.8rem !important;
+                width: 100% !important;
+            }
+
+            #btn-master-toggle-edit {
+                position: static !important;
+                width: 100% !important;
+                margin-bottom: 0.5rem !important;
+            }
+
+            #master-modal-overlay button.danger {
+                position: static !important;
+                width: 100% !important;
+                margin-bottom: 1rem !important;
+            }
+
+            /* Link torna al portale nell'header */
+            .back-link {
+                position: static !important;
+                display: block !important;
+                text-align: center;
+                margin-bottom: 0.8rem !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -746,14 +791,14 @@
                     </div>
 
                    <div class="section-header" style="margin-top: 1rem;">
-    <span class="section-title" style="font-size: 1rem;">Comandi Globali</span>
-</div>
-<div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-   <button class="portal-btn alt" style="margin-top:0; flex: 1;" onclick="accreditaPezziGlobaliManuale()">+ PE a Tutti (Manuale)</button>
-    <button class="portal-btn alt" style="margin-top:0; flex: 1;" onclick="esportaBackgroundSelezionatoWord()">📄 Esporta Background Selezionato</button>
-    <button class="portal-btn alt" style="margin-top:0; flex: 1;" onclick="esportaBackgroundWord()">📚 Esporta Tutti i Background</button>
-    <button class="portal-btn" style="margin-top:0; width: 100%;" onclick="creaNuovaSchedaMaster()">Crea Scheda Ex Novo</button>
-</div>
+                        <span class="section-title" style="font-size: 1rem;">Comandi Globali</span>
+                   </div>
+                   <div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="portal-btn alt" style="margin-top:0; flex: 1;" onclick="accreditaPezziGlobaliManuale()">+ PE a Tutti (Manuale)</button>
+                        <button class="portal-btn alt" style="margin-top:0; flex: 1;" onclick="esportaBackgroundSelezionatoWord()">📄 Esporta Background Selezionato</button>
+                        <button class="portal-btn alt" style="margin-top:0; flex: 1;" onclick="esportaBackgroundWord()">📚 Esporta Tutti i Background</button>
+                        <button class="portal-btn" style="margin-top:0; width: 100%;" onclick="creaNuovaSchedaMaster()">Crea Scheda Ex Novo</button>
+                   </div>
 
                     <button class="portal-btn danger" style="margin-top: 1rem;" onclick="signOut()">Esci dal Portale</button>
                 </div>
@@ -1029,10 +1074,10 @@
         <div style="max-width: 900px; margin: auto; background-color: rgba(17, 30, 38, 0.98); border: 2px solid var(--border-accent); border-radius: 8px; padding: 2rem; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.9);">
             
             <!-- Tasto in alto a sinistra per Master (Aggiorna / Salva) -->
-<button id="btn-master-toggle-edit" class="portal-btn alt" style="position: absolute; top: 1.5rem; left: 1.5rem; width: auto; padding: 0.4rem 1.2rem; margin-top: 0;" onclick="toggleEditMasterModal()">✏️ Aggiorna Scheda</button>
+            <button id="btn-master-toggle-edit" class="portal-btn alt" style="position: absolute; top: 1.5rem; left: 1.5rem; width: auto; padding: 0.4rem 1.2rem; margin-top: 0;" onclick="toggleEditMasterModal()">✏️ Aggiorna Scheda</button>
 
-<!-- Tasto in alto a destra per Chiudere -->
-<button class="portal-btn danger" style="position: absolute; top: 1.5rem; right: 1.5rem; width: auto; padding: 0.4rem 1rem; margin-top: 0;" onclick="chiudiModalMaster()">✖ Chiudi Scheda</button>
+            <!-- Tasto in alto a destra per Chiudere -->
+            <button class="portal-btn danger" style="position: absolute; top: 1.5rem; right: 1.5rem; width: auto; padding: 0.4rem 1rem; margin-top: 0;" onclick="chiudiModalMaster()">✖ Chiudi Scheda</button>
             
             <h2 id="modal-titolo-pg" style="font-family: 'Cinzel', serif; color: var(--text-foam); font-size: 1.4rem; margin-bottom: 1rem; text-align: center;">Scheda Personaggio</h2>
 
@@ -1346,60 +1391,57 @@
 
             modalContainer.appendChild(profileSection);
 
-    // Inizializza la scheda in modalità lettura
-    editModeActive = false;
-    await caricaDatiScheda(userId);
+            editModeActive = false;
+            await caricaDatiScheda(userId);
 
-    const btnToggle = document.getElementById('btn-master-toggle-edit');
-    if (btnToggle) {
-        btnToggle.innerText = '✏️ Aggiorna Scheda';
-        btnToggle.classList.add('alt');
-    }
-}
+            const btnToggle = document.getElementById('btn-master-toggle-edit');
+            if (btnToggle) {
+                btnToggle.innerText = '✏️ Aggiorna Scheda';
+                btnToggle.classList.add('alt');
+            }
+        }
 
-window.toggleEditMasterModal = async function() {
-    const btnToggle = document.getElementById('btn-master-toggle-edit');
-    if (!editModeActive) {
-        // Passa alla modalità modifica
-        editModeActive = true;
-        bloccaTuttiCampi(false);
-        if (btnToggle) {
-            btnToggle.innerText = '💾 Salva Scheda';
-            btnToggle.classList.remove('alt');
-        }
-    } else {
-        // Salva le modifiche e torna alla modalità lettura
-        await salvaScheda();
-        editModeActive = false;
-        if (btnToggle) {
-            btnToggle.innerText = '✏️ Aggiorna Scheda';
-            btnToggle.classList.add('alt');
-        }
-    }
-};
+        window.toggleEditMasterModal = async function() {
+            const btnToggle = document.getElementById('btn-master-toggle-edit');
+            if (!editModeActive) {
+                editModeActive = true;
+                bloccaTuttiCampi(false);
+                if (btnToggle) {
+                    btnToggle.innerText = '💾 Salva Scheda';
+                    btnToggle.classList.remove('alt');
+                }
+            } else {
+                await salvaScheda();
+                editModeActive = false;
+                if (btnToggle) {
+                    btnToggle.innerText = '✏️ Aggiorna Scheda';
+                    btnToggle.classList.add('alt');
+                }
+            }
+        };
        
-window.chiudiModalMaster = function() {
-    document.getElementById('master-modal-overlay').style.display = 'none';
-    targetUserIdMaster = null;
-    editModeActive = false;
-    
-    const portalLayout = document.querySelector('.portal-layout');
-    const profileSection = document.getElementById('profile-section');
-    const actionsSidebar = document.getElementById('actions-sidebar');
-    
-    profileSection.style.display = 'none';
-    if (actionsSidebar) actionsSidebar.style.display = 'none';
-    
-    if (portalLayout && profileSection) {
-        if (actionsSidebar) {
-            portalLayout.insertBefore(profileSection, actionsSidebar);
-        } else {
-            portalLayout.appendChild(profileSection);
-        }
-    }
+        window.chiudiModalMaster = function() {
+            document.getElementById('master-modal-overlay').style.display = 'none';
+            targetUserIdMaster = null;
+            editModeActive = false;
+            
+            const portalLayout = document.querySelector('.portal-layout');
+            const profileSection = document.getElementById('profile-section');
+            const actionsSidebar = document.getElementById('actions-sidebar');
+            
+            profileSection.style.display = 'none';
+            if (actionsSidebar) actionsSidebar.style.display = 'none';
+            
+            if (portalLayout && profileSection) {
+                if (actionsSidebar) {
+                    portalLayout.insertBefore(profileSection, actionsSidebar);
+                } else {
+                    portalLayout.appendChild(profileSection);
+                }
+            }
 
-    caricaListaSchedeMaster();
-};
+            caricaListaSchedeMaster();
+        };
 
         window.accreditaPEMasterSelezionato = function() {
             let userId = document.getElementById('master-select-scheda').value;
@@ -1498,154 +1540,151 @@ window.chiudiModalMaster = function() {
             caricaListaSchedeMaster();
         };
 
-      window.accreditaPezziGlobaliManuale = async function() {
-    let inputVal = prompt("Quanti Punti Esperienza (PE) vuoi accreditare a tutti i giocatori?", "1");
-    if (inputVal === null || inputVal.trim() === "") return;
-    let val = parseInt(inputVal);
-    if (isNaN(val)) {
-        mostraPopup("Errore", "Inserisci un numero valido.");
-        return;
-    }
+        window.accreditaPezziGlobaliManuale = async function() {
+            let inputVal = prompt("Quanti Punti Esperienza (PE) vuoi accreditare a tutti i giocatori?", "1");
+            if (inputVal === null || inputVal.trim() === "") return;
+            let val = parseInt(inputVal);
+            if (isNaN(val)) {
+                mostraPopup("Errore", "Inserisci un numero valido.");
+                return;
+            }
 
-    if (!confirm(`Confermi di voler accreditare ${val} PE a tutti i giocatori?`)) return;
+            if (!confirm(`Confermi di voler accreditare ${val} PE a tutti i giocatori?`)) return;
 
-    const { data: personaggi } = await supabaseClient.from('personaggi').select('user_id, punti_esperienza');
-    if (!personaggi) return;
+            const { data: personaggi } = await supabaseClient.from('personaggi').select('user_id, punti_esperienza');
+            if (!personaggi) return;
 
-    for (let p of personaggi) {
-        let peAttuali = p.punti_esperienza || 0;
-        await supabaseClient.from('personaggi').update({ punti_esperienza: peAttuali + val }).eq('user_id', p.user_id);
-    }
-    
-    mostraPopup("Successo", `Accreditati con successo ${val} PE a tutti i giocatori!`);
-    caricaListaSchedeMaster();
-};
+            for (let p of personaggi) {
+                let peAttuali = p.punti_esperienza || 0;
+                await supabaseClient.from('personaggi').update({ punti_esperienza: peAttuali + val }).eq('user_id', p.user_id);
+            }
+            
+            mostraPopup("Successo", `Accreditati con successo ${val} PE a tutti i giocatori!`);
+            caricaListaSchedeMaster();
+        };
 
-// Funzione helper per scaricare una stringa HTML in formato .doc (Word)
-function scaricaDocumentoWord(nomeFile, titolo, contenutoHtml) {
-    let documentoCompleto = `
-        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-        <head>
-            <meta charset="utf-8">
-            <title>${titolo}</title>
-            <style>
-                body { font-family: 'Times New Roman', serif; font-size: 12pt; color: #000000; line-height: 1.5; margin: 2cm; }
-                h1 { text-align: center; font-family: Arial, sans-serif; color: #111e26; font-size: 18pt; margin-bottom: 20px; }
-                .bg-block { margin-bottom: 30px; page-break-inside: avoid; border-bottom: 1px solid #cccccc; padding-bottom: 20px; }
-                .meta-info { font-family: Arial, sans-serif; font-size: 10.5pt; color: #444444; background-color: #f2f5f8; padding: 10px; margin-bottom: 15px; border-left: 4px solid #111e26; }
-                .meta-info strong { color: #000000; }
-                .bg-text { text-align: justify; white-space: pre-wrap; font-style: italic; font-size: 11.5pt; }
-            </style>
-        </head>
-        <body>
-            <h1>${titolo}</h1>
-            ${contenutoHtml}
-        </body>
-        </html>
-    `;
+        function scaricaDocumentoWord(nomeFile, titolo, contenutoHtml) {
+            let documentoCompleto = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="utf-8">
+                    <title>${titolo}</title>
+                    <style>
+                        body { font-family: 'Times New Roman', serif; font-size: 12pt; color: #000000; line-height: 1.5; margin: 2cm; }
+                        h1 { text-align: center; font-family: Arial, sans-serif; color: #111e26; font-size: 18pt; margin-bottom: 20px; }
+                        .bg-block { margin-bottom: 30px; page-break-inside: avoid; border-bottom: 1px solid #cccccc; padding-bottom: 20px; }
+                        .meta-info { font-family: Arial, sans-serif; font-size: 10.5pt; color: #444444; background-color: #f2f5f8; padding: 10px; margin-bottom: 15px; border-left: 4px solid #111e26; }
+                        .meta-info strong { color: #000000; }
+                        .bg-text { text-align: justify; white-space: pre-wrap; font-style: italic; font-size: 11.5pt; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${titolo}</h1>
+                    ${contenutoHtml}
+                </body>
+                </html>
+            `;
 
-    const blob = new Blob(['\ufeff' + documentoCompleto], { type: 'application/msword' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = nomeFile;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
+            const blob = new Blob(['\ufeff' + documentoCompleto], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = nomeFile;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
 
-// 1. Esporta il singolo background del personaggio selezionato nel menu a tendina
-window.esportaBackgroundSelezionatoWord = async function() {
-    const selectElem = document.getElementById('master-select-scheda');
-    let userId = selectElem.value;
+        window.esportaBackgroundSelezionatoWord = async function() {
+            const selectElem = document.getElementById('master-select-scheda');
+            let userId = selectElem.value;
 
-    if (!userId) {
-        mostraPopup("Attenzione", "Seleziona prima un personaggio dal menù a tendina.");
-        return;
-    }
+            if (!userId) {
+                mostraPopup("Attenzione", "Seleziona prima un personaggio dal menù a tendina.");
+                return;
+            }
 
-    const { data: p, error } = await supabaseClient
-        .from('personaggi')
-        .select('nome_giocatore, nome_personaggio, email, user_id, background')
-        .eq('user_id', userId)
-        .maybeSingle();
+            const { data: p, error } = await supabaseClient
+                .from('personaggi')
+                .select('nome_giocatore, nome_personaggio, email, user_id, background')
+                .eq('user_id', userId)
+                .maybeSingle();
 
-    if (error || !p) {
-        mostraPopup("Errore", "Impossibile recuperare la scheda del personaggio selezionato.");
-        return;
-    }
+            if (error || !p) {
+                mostraPopup("Errore", "Impossibile recuperare la scheda del personaggio selezionato.");
+                return;
+            }
 
-    if (!p.background || p.background.trim() === '') {
-        mostraPopup("Attenzione", `Il personaggio "${p.nome_personaggio || 'Senza Nome'}" non ha ancora inserito un background.`);
-        return;
-    }
+            if (!p.background || p.background.trim() === '') {
+                mostraPopup("Attenzione", `Il personaggio "${p.nome_personaggio || 'Senza Nome'}" non ha ancora inserito un background.`);
+                return;
+            }
 
-    let nomePg = p.nome_personaggio || 'Senza_Nome';
-    let nomeGioc = p.nome_giocatore || 'Non specificato';
-    let emailGioc = p.email || p.user_id;
+            let nomePg = p.nome_personaggio || 'Senza_Nome';
+            let nomeGioc = p.nome_giocatore || 'Non specificato';
+            let emailGioc = p.email || p.user_id;
 
-    let htmlBody = `
-        <div class="bg-block" style="border-bottom: none;">
-            <div class="meta-info">
-                <strong>Personaggio:</strong> ${nomePg}<br>
-                <strong>Giocatore:</strong> ${nomeGioc}<br>
-                <strong>Email:</strong> ${emailGioc}
-            </div>
-            <div class="bg-text">${p.background}</div>
-        </div>
-    `;
-
-    let nomeFilePulito = nomeGioc.replace(/[^a-zA-Z0-9_-]/g, '_');
-    scaricaDocumentoWord(
-        `Background_${nomeFilePulito}.doc`,
-        `Background: ${nomePg}`,
-        htmlBody
-    );
-};
-
-// 2. Esporta tutti i background in un unico documento Word
-window.esportaBackgroundWord = async function() {
-    const { data: personaggi, error } = await supabaseClient
-        .from('personaggi')
-        .select('nome_giocatore, nome_personaggio, email, user_id, background')
-        .order('nome_personaggio', { ascending: true });
-
-    if (error || !personaggi) {
-        mostraPopup("Errore", "Impossibile recuperare i background dal database.");
-        return;
-    }
-
-    let conBackground = personaggi.filter(p => p.background && p.background.trim() !== '');
-
-    if (conBackground.length === 0) {
-        mostraPopup("Attenzione", "Nessun background inserito dai giocatori al momento.");
-        return;
-    }
-
-    let htmlBody = '';
-    conBackground.forEach((p, index) => {
-        let nomeGioc = p.nome_giocatore || 'Non specificato';
-        let nomePg = p.nome_personaggio || 'Senza Nome';
-        let emailGioc = p.email || p.user_id;
-
-        htmlBody += `
-            <div class="bg-block">
-                <div class="meta-info">
-                    <strong>#${index + 1} | Personaggio:</strong> ${nomePg}<br>
-                    <strong>Giocatore:</strong> ${nomeGioc} (${emailGioc})
+            let htmlBody = `
+                <div class="bg-block" style="border-bottom: none;">
+                    <div class="meta-info">
+                        <strong>Personaggio:</strong> ${nomePg}<br>
+                        <strong>Giocatore:</strong> ${nomeGioc}<br>
+                        <strong>Email:</strong> ${emailGioc}
+                    </div>
+                    <div class="bg-text">${p.background}</div>
                 </div>
-                <div class="bg-text">${p.background}</div>
-            </div>
-        `;
-    });
+            `;
 
-    scaricaDocumentoWord(
-        `Background_Absidia_Tutti_${new Date().toISOString().slice(0, 10)}.doc`,
-        'Raccolta Background Ufficiali - Absidia',
-        htmlBody
-    );
-};
+            let nomeFilePulito = nomeGioc.replace(/[^a-zA-Z0-9_-]/g, '_');
+            scaricaDocumentoWord(
+                `Background_${nomeFilePulito}.doc`,
+                `Background: ${nomePg}`,
+                htmlBody
+            );
+        };
+
+        window.esportaBackgroundWord = async function() {
+            const { data: personaggi, error } = await supabaseClient
+                .from('personaggi')
+                .select('nome_giocatore, nome_personaggio, email, user_id, background')
+                .order('nome_personaggio', { ascending: true });
+
+            if (error || !personaggi) {
+                mostraPopup("Errore", "Impossibile recuperare i background dal database.");
+                return;
+            }
+
+            let conBackground = personaggi.filter(p => p.background && p.background.trim() !== '');
+
+            if (conBackground.length === 0) {
+                mostraPopup("Attenzione", "Nessun background inserito dai giocatori al momento.");
+                return;
+            }
+
+            let htmlBody = '';
+            conBackground.forEach((p, index) => {
+                let nomeGioc = p.nome_giocatore || 'Non specificato';
+                let nomePg = p.nome_personaggio || 'Senza Nome';
+                let emailGioc = p.email || p.user_id;
+
+                htmlBody += `
+                    <div class="bg-block">
+                        <div class="meta-info">
+                            <strong>#${index + 1} | Personaggio:</strong> ${nomePg}<br>
+                            <strong>Giocatore:</strong> ${nomeGioc} (${emailGioc})
+                        </div>
+                        <div class="bg-text">${p.background}</div>
+                    </div>
+                `;
+            });
+
+            scaricaDocumentoWord(
+                `Background_Absidia_Tutti_${new Date().toISOString().slice(0, 10)}.doc`,
+                'Raccolta Background Ufficiali - Absidia',
+                htmlBody
+            );
+        };
 
         window.salvaScheda = async function() {
             let userId = getActiveUserId();
@@ -1699,50 +1738,48 @@ window.esportaBackgroundWord = async function() {
         };
 
         async function caricaDatiScheda(userId) {
-    let { data: personaggio } = await supabaseClient.from('personaggi').select('*').eq('user_id', userId).maybeSingle();
+            let { data: personaggio } = await supabaseClient.from('personaggi').select('*').eq('user_id', userId).maybeSingle();
 
-    if (!personaggio) {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        const { data: nuovoPezzo } = await supabaseClient.from('personaggi').upsert([{ 
-            user_id: userId, email: session ? session.user.email : null,
-            punti_creazione: 25, punti_esperienza: 0, punti_ferita: 3, cartellini_volonta: 0, 
-            scheda_salvata: false, magie_selezionate: {}
-        }], { onConflict: 'user_id' }).select().maybeSingle();
-        personaggio = nuovoPezzo;
-    }
+            if (!personaggio) {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                const { data: nuovoPezzo } = await supabaseClient.from('personaggi').upsert([{ 
+                    user_id: userId, email: session ? session.user.email : null,
+                    punti_creazione: 25, punti_esperienza: 0, punti_ferita: 3, cartellini_volonta: 0, 
+                    scheda_salvata: false, magie_selezionate: {}
+                }], { onConflict: 'user_id' }).select().maybeSingle();
+                personaggio = nuovoPezzo;
+            }
 
-    userMagieSelezionate = (personaggio && personaggio.magie_selezionate) ? personaggio.magie_selezionate : {};
-    schedaSalvataInDb = personaggio ? personaggio.scheda_salvata : false;
-    
-    // RIMOSSO: editModeActive = isMaster ? true : false;
-    // La scheda parte SEMPRE bloccata finché non si preme "Aggiorna Scheda"
-    if (!editModeActive) {
-        bloccaTuttiCampi(true);
-    }
+            userMagieSelezionate = (personaggio && personaggio.magie_selezionate) ? personaggio.magie_selezionate : {};
+            schedaSalvataInDb = personaggio ? personaggio.scheda_salvata : false;
+            
+            if (!editModeActive) {
+                bloccaTuttiCampi(true);
+            }
 
-    document.getElementById('gen-giocatore').value = personaggio?.nome_giocatore || '';
-    document.getElementById('user-email').value = personaggio?.email || personaggio?.user_id || '';
-    document.getElementById('gen-personaggio').value = personaggio?.nome_personaggio || '';
-    document.getElementById('gen-razza').value = personaggio?.razza || 'Umano';
-    document.getElementById('gen-religione').value = personaggio?.religione || '';
-    document.getElementById('gen-eta').value = personaggio?.eta || '';
-    document.getElementById('gen-provenienza-regione').value = personaggio?.provenienza_regione || '';
-    document.getElementById('gen-provenienza-libera').value = personaggio?.provenienza_libera || '';
-    
-    initialPe = personaggio?.punti_esperienza ?? 0;
-    document.getElementById('gen-pe').value = initialPe;
-    document.getElementById('txt-inventario').value = personaggio?.inventario || '';
-    document.getElementById('txt-diario').value = personaggio?.diario || '';
-    document.getElementById('txt-background').value = personaggio?.background || '';
+            document.getElementById('gen-giocatore').value = personaggio?.nome_giocatore || '';
+            document.getElementById('user-email').value = personaggio?.email || personaggio?.user_id || '';
+            document.getElementById('gen-personaggio').value = personaggio?.nome_personaggio || '';
+            document.getElementById('gen-razza').value = personaggio?.razza || 'Umano';
+            document.getElementById('gen-religione').value = personaggio?.religione || '';
+            document.getElementById('gen-eta').value = personaggio?.eta || '';
+            document.getElementById('gen-provenienza-regione').value = personaggio?.provenienza_regione || '';
+            document.getElementById('gen-provenienza-libera').value = personaggio?.provenienza_libera || '';
+            
+            initialPe = personaggio?.punti_esperienza ?? 0;
+            document.getElementById('gen-pe').value = initialPe;
+            document.getElementById('txt-inventario').value = personaggio?.inventario || '';
+            document.getElementById('txt-diario').value = personaggio?.diario || '';
+            document.getElementById('txt-background').value = personaggio?.background || '';
 
-    if (!isMaster) {
-        document.getElementById('btn-salva').disabled = true;
-        document.getElementById('btn-crea').disabled = schedaSalvataInDb;
-        document.getElementById('btn-aggiorna').disabled = !schedaSalvataInDb;
-    }
+            if (!isMaster) {
+                document.getElementById('btn-salva').disabled = true;
+                document.getElementById('btn-crea').disabled = schedaSalvataInDb;
+                document.getElementById('btn-aggiorna').disabled = !schedaSalvataInDb;
+            }
 
-    await caricaAbilita(userId);
-}
+            await caricaAbilita(userId);
+        }
 
         function bloccaTuttiCampi(bloccato) {
             const campi = document.querySelectorAll('#profile-section input:not(#user-email):not(#gen-pf):not(#gen-volonta):not(#gen-cm-comuni):not(#gen-cm-non-comuni):not(#gen-cm-rari):not(#gen-cm-leggendari), #profile-section select, #profile-section textarea');
@@ -1766,7 +1803,7 @@ window.esportaBackgroundWord = async function() {
                 document.getElementById('gen-pc').disabled = true;
             }
             ricalcolaStatisticheDerivate();
-	    document.getElementById('btn-salva').disabled = false;
+            document.getElementById('btn-salva').disabled = false;
             document.getElementById('btn-crea').disabled = true;
         };
 
@@ -2075,85 +2112,66 @@ window.esportaBackgroundWord = async function() {
             return tuttiSoddisfatti ? "Prerequisiti soddisfatti" : "Prerequisiti: " + descrizioni.join(", ");
         }
 
-       // Gestione del click per aprire/chiudere il popup dei prerequisiti da mobile/PC
-window.togglePopupAbilita = function(abId, event) {
-    event.stopPropagation();
-    const popup = document.getElementById(`popup-${abId}`);
-    if (!popup) return;
+        window.togglePopupAbilita = function(abId, event) {
+            event.stopPropagation();
+            const popup = document.getElementById(`popup-${abId}`);
+            if (!popup) return;
 
-    // Chiude eventuali altri popup aperti nella pagina
-    document.querySelectorAll('.ability-popup').forEach(p => {
-        if (p.id !== `popup-${abId}`) p.style.display = 'none';
-    });
+            document.querySelectorAll('.ability-popup').forEach(p => {
+                if (p.id !== `popup-${abId}`) p.style.display = 'none';
+            });
 
-    // Inverte lo stato del popup selezionato
-    if (popup.style.display === 'block') {
-        popup.style.display = 'none';
-    } else {
-        popup.style.display = 'block';
-    }
-};
+            if (popup.style.display === 'block') {
+                popup.style.display = 'none';
+            } else {
+                popup.style.display = 'block';
+            }
+        };
 
-// Chiude i popup se si clicca in un punto qualsiasi fuori dalle abilità
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('.ability-item')) {
-        document.querySelectorAll('.ability-popup').forEach(p => p.style.display = 'none');
-    }
-});
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.ability-item')) {
+                document.querySelectorAll('.ability-popup').forEach(p => p.style.display = 'none');
+            }
+        });
 
-// Funzione aggiornata per il rendering grafico delle abilità
-function renderAbilitaUI() {
-    const container = document.getElementById('abilita-container');
-    if (!allAbilitiesList.length) {
-        container.innerHTML = '<p style="color: var(--text-faded); font-style: italic;">Nessuna abilità trovata.</p>';
-        return;
-    }
+        function renderAbilitaUI() {
+            const container = document.getElementById('abilita-container');
+            if (!allAbilitiesList.length) {
+                container.innerHTML = '<p style="color: var(--text-faded); font-style: italic;">Nessuna abilità trovata.</p>';
+                return;
+            }
 
-    let html = '<div class="abilities-grid">';
-    allAbilitiesList.forEach(ab => {
-        let currentLevel = userAbilities[ab.id] || 0;
-        let eRipetibile = abilitaRipetibili.map(r => r.toUpperCase()).includes(ab.name.toUpperCase());                
-        let testoLivello = `Liv. ${currentLevel}`;
-        if (eRipetibile && currentLevel > 4) {
-            let livelloEffettivo = ((currentLevel - 1) % 4) + 1;
-            testoLivello = `Liv. ${currentLevel} (Eff. ${livelloEffettivo})`;
-        } else if (!eRipetibile) {
-            testoLivello += `/${ab.max_level || 4}`;
+            let html = '<div class="abilities-grid">';
+            allAbilitiesList.forEach(ab => {
+                let currentLevel = userAbilities[ab.id] || 0;
+                let eRipetibile = abilitaRipetibili.map(r => r.toUpperCase()).includes(ab.name.toUpperCase());                
+                let testoLivello = `Liv. ${currentLevel}`;
+                if (eRipetibile && currentLevel > 4) {
+                    let livelloEffettivo = ((currentLevel - 1) % 4) + 1;
+                    testoLivello = `Liv. ${currentLevel} (Eff. ${livelloEffettivo})`;
+                } else if (!eRipetibile) {
+                    testoLivello += `/${ab.max_level || 4}`;
+                }
+
+                let disabledAttr = (!editModeActive && !isMaster) ? 'disabled' : '';
+                let statusClass = currentLevel > 0 ? 'active' : (prerequisitiSoddisfatti(ab) ? 'available' : 'inactive');
+
+                html += `
+                    <div class="ability-item ${statusClass}" onclick="togglePopupAbilita(${ab.id}, event)">
+                        <div class="ability-info" style="flex-grow: 1; cursor: pointer;">
+                            <div class="ability-name">${ab.name} (<span id="lvl-${ab.id}">${testoLivello}</span>) <span style="font-size:0.75rem; opacity:0.7;">ℹ️</span></div>
+                        </div>
+                        <div class="ability-controls" onclick="event.stopPropagation()">
+                            <button onclick="modificaAbilita(${ab.id}, -1)" ${(!editModeActive && !isMaster) || (schedaSalvataInDb && !isMaster && currentLevel <= (userAbilitiesSaved[ab.id] || 0)) ? 'disabled' : ''}>-</button>
+                            <button onclick="modificaAbilita(${ab.id}, 1)" ${disabledAttr}>+</button>
+                        </div>
+                        <div class="ability-popup" id="popup-${ab.id}">${ottieniTestoPrerequisiti(ab)}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
         }
-
-        let disabledAttr = (!editModeActive && !isMaster) ? 'disabled' : '';
-        let statusClass = currentLevel > 0 ? 'active' : (prerequisitiSoddisfatti(ab) ? 'available' : 'inactive');
-
-        html += `
-            <div class="ability-item ${statusClass}" onclick="togglePopupAbilita(${ab.id}, event)">
-                <div class="ability-info" style="flex-grow: 1; cursor: pointer;">
-                    <div class="ability-name">${ab.name} (<span id="lvl-${ab.id}">${testoLivello}</span>) <span style="font-size:0.75rem; opacity:0.7;">ℹ️</span></div>
-                </div>
-                <div class="ability-controls" onclick="event.stopPropagation()">
-                    <button onclick="modificaAbilita(${ab.id}, -1)" ${(!editModeActive && !isMaster) || (schedaSalvataInDb && !isMaster && currentLevel <= (userAbilitiesSaved[ab.id] || 0)) ? 'disabled' : ''}>-</button>
-                    <button onclick="modificaAbilita(${ab.id}, 1)" ${disabledAttr}>+</button>
-                </div>
-                <div class="ability-popup" id="popup-${ab.id}">${ottieniTestoPrerequisiti(ab)}</div>
-            </div>
-        `;
-    });
-    html += '</div>';
-    container.innerHTML = html;
-}
-
-        let popupTimer = null;
-        window.avviaTimerPopup = function(elemento, abId) {
-            clearTimeout(popupTimer);
-            popupTimer = setTimeout(() => {
-                const popup = document.getElementById(`popup-${abId}`);
-                if (popup) popup.style.display = 'block';
-            }, 1000);
-        };
-
-        window.chiudiPopup = function(elemento) {
-            clearTimeout(popupTimer);
-            elemento.querySelectorAll('.ability-popup').forEach(p => p.style.display = 'none');
-        };
 
         window.modificaAbilita = function(abilityId, delta) {
             if (!editModeActive && !isMaster) return;
@@ -2245,12 +2263,10 @@ function renderAbilitaUI() {
             });
         }
 
-        // Inizializzazione della sessione all'avvio della pagina
         document.addEventListener('DOMContentLoaded', () => {
             checkSession();
         });
 
-        // Listener per aggiornamenti dello stato di autenticazione Supabase
         supabaseClient.auth.onAuthStateChange((event, session) => {
             checkSession();
         });
