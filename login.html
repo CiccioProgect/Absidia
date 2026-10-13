@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+	<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
@@ -574,6 +574,68 @@
             .magic-columns { grid-template-columns: 1fr 1fr; }
             .audio-container { position: relative; top: auto; right: auto; margin-top: 0.5rem; }
         }
+
+/* --- CORREZIONI MOBILE --- */
+@media (max-width: 768px) {
+    /* 1. Previene lo zoom forzato su iPhone/Safari negli input */
+    input, select, textarea {
+        font-size: 16px !important;
+    }
+
+    /* 2. Menu a schede con scroll orizzontale invece che a capo */
+    .sheet-nav-tabs {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        justify-content: flex-start !important;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.6rem;
+    }
+
+    .tab-btn {
+        flex: 0 0 auto;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    /* 3. Ingrandimento dei tasti + e - delle abilità per il Touch */
+    .ability-controls button {
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 1.2rem !important;
+    }
+
+    /* 4. Layout modale Master ottimizzato per mobile */
+    #master-modal-overlay {
+        padding: 0.5rem !important;
+    }
+
+    #master-modal-overlay > div {
+        padding: 1rem !important;
+        width: 100% !important;
+    }
+
+    #btn-master-toggle-edit {
+        position: static !important;
+        width: 100% !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    #master-modal-overlay button.danger {
+        position: static !important;
+        width: 100% !important;
+        margin-bottom: 1rem !important;
+    }
+
+    /* 5. Aggiustamento header su schermi piccoli */
+    .back-link {
+        position: static !important;
+        display: block !important;
+        text-align: center;
+        margin-bottom: 0.8rem !important;
+    }
+}
+
     </style>
 </head>
 <body>
