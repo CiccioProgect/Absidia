@@ -1300,7 +1300,8 @@
                     profileSection.style.display = 'none';
                     masterDashboard.style.display = 'block';
                     if (actionsSidebar) actionsSidebar.style.display = 'none';
-                    await caricaListaSchedeMaster();
+                    if (instructionsSidebar) instructionsSidebar.style.display = 'none';
+		    await caricaListaSchedeMaster();
                 } else {
                     masterDashboard.style.display = 'none';
                     profileSection.style.display = 'block';
