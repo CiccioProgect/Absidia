@@ -786,6 +786,18 @@
                         Benvenuto Master. Cerca o seleziona una scheda dal menù a tendina per aprirla in una nuova scheda, oppure usa i comandi rapidi.
                     </p>
 
+		<!-- BOX STATISTICHE / CONTATORI -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="background: rgba(9, 19, 26, 0.8); padding: 1rem; border: 1px solid var(--border-accent); border-radius: 6px; text-align: center;">
+                            <span style="font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--text-faded); display: block; margin-bottom: 0.3rem;">Schede Salvate</span>
+                            <strong id="counter-schede-salvate" style="font-size: 1.5rem; color: var(--text-foam);">0</strong>
+                        </div>
+                        <div style="background: rgba(9, 19, 26, 0.8); padding: 1rem; border: 1px solid var(--border-accent); border-radius: 6px; text-align: center;">
+                            <span style="font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--text-faded); display: block; margin-bottom: 0.3rem;">Con Background</span>
+                            <strong id="counter-con-background" style="font-size: 1.5rem; color: var(--border-accent);">0</strong>
+                        </div>
+                    </div>
+
                     <div style="background: rgba(9, 19, 26, 0.8); padding: 1.2rem; border: 1px solid var(--text-faded); border-radius: 6px; margin-bottom: 1.5rem;">
                         <label style="font-family: 'Cinzel', serif; color: var(--border-accent); display: block; margin-bottom: 0.5rem;">
                             🔍 Cerca e Seleziona Scheda Personaggio:
@@ -1343,6 +1355,16 @@
 
             elencoPersonaggiMaster = personaggi;
             popolaSelectMaster(elencoPersonaggiMaster);
+
+            // --- CALCOLO E AGGIORNAMENTO CONTATORI ---
+            let totaliSalvate = personaggi.filter(p => p.scheda_salvata === true).length;
+            let totaliConBackground = personaggi.filter(p => p.scheda_salvata === true && p.background && p.background.trim() !== '').length;
+
+            const counterSalvateElem = document.getElementById('counter-schede-salvate');
+            const counterBgElem = document.getElementById('counter-con-background');
+
+            if (counterSalvateElem) counterSalvateElem.innerText = totaliSalvate;
+            if (counterBgElem) counterBgElem.innerText = totaliConBackground;
         }
 
         function popolaSelectMaster(lista) {
